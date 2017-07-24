@@ -1,0 +1,35 @@
+{block content}
+
+{foreach $data as $tiket}
+<div class='callout large-6 columns'>
+	<div class='row'>
+    <div class='large-6 columns vypis_zahlavi'>Kurz: <strong>{$tiket["rate"]}</strong></div>
+    <div class='large-6 columns vypis_zahlavi'>Částka: <strong>{$tiket["amountPaid"]} {$tiket["currency"]}</strong></div>
+    <div class='large-12 columns vypis_zahlavi'>Možná výhra: <strong>{$tiket["potentialWin"]} {$tiket["currency"]}</strong></div>
+  </div>
+
+    <div class='row'>
+   	<div class='large-6 columns text-right'>Událost</div>
+   	<div class='large-6 columns'>Tip</div>
+   	<hr />
+
+    {*foreach $data_zapasy as $tiket_zapasy}
+      <div class='tiket_tipy'><div class='large-6 columns text-right'>{$tiket_zapasy["eventName"]}</div>
+      <div class='large-6 columns'>{$tiket_zapasy["opportunityfullName"]}</div></div>
+    {/foreach*}
+
+    {for $j=0;$j<count($data_zapasy[$tiket["id_tiketu"]]);$j++}
+      <div class='tiket_tipy'><div class='large-6 columns text-right'>{$data_zapasy[$tiket["id_tiketu"]][$j]["eventName"]}</div>
+      <div class='large-6 columns'>{$data_zapasy[$tiket["id_tiketu"]][$j]["opportunityfullName"]}</div></div>
+    {/for}
+
+    </div>
+  
+  
+  <a href='"{$tiket ["url"]}"' target='_blank' class='button expanded' style='margin-top:25px;'>Vsadit tento tiket s možnou výhrou <strong>{$tiket["potentialWin"]} {$tiket["currency"]}</strong></a>
+    
+</div>
+{/foreach}
+
+
+{/block content}

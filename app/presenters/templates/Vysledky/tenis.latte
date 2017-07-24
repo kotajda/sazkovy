@@ -1,0 +1,7 @@
+{block content}
+
+<ul class="menu" n:inner-foreach="$vysledkySporty as $item => $link">
+	<li class="large-2 columns {ifCurrent Vysledky:$link}active{/ifCurrent} end"><a n:href="Vysledky:$link">{$item}</a></li>
+</ul>
+
+{/block content}

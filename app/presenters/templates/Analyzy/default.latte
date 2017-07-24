@@ -1,0 +1,21 @@
+{block content}
+
+  {foreach $data as $analyza}
+  	<div class="row callout">
+	  	<div class="row">
+		    <div class='large-4 columns vypis_zahlavi'>Co: "{$analyza["matchName"]}"</div>
+		    <div class='large-4 columns vypis_zahlavi'>Tip: "{$analyza["tip"]}"</div>
+		    <div class='large-4 columns vypis_zahlavi'>Kurz: "{$analyza["rate"]}"</div>
+	    </div>
+	    <div class="row">
+	    	<div class='large-12 columns' style="word-break: break-all;">{explode("1",print($analyza["text"]))[0]}</div>
+	    </div>
+	    <a href='{$analyza["url"]}' target='_blank' class='button expand'>Získat další informace o události {$analyza["matchName"]}</a>
+    </div>
+  {/foreach}
+
+
+<a href="?strana={$strankovani+10}">Další analýzy</a>
+
+
+{/block content}

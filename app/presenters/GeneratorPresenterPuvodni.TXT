@@ -1,0 +1,531 @@
+<?php
+
+namespace App\Presenters;
+
+use Nette;
+use App\Model;
+use Nette\Application\UI;
+
+use Nette\Database\Context;
+use Nette\Database\Connection;
+
+use Nette\Utils\Html;
+
+use Tracy\Debugger;
+
+
+class GeneratorPresenter extends BasePresenter
+{
+	/** @var Nette\Database\Context */
+	private $databaze;
+
+    private $moznosti;
+
+    public function __construct(Nette\Database\Context $databaze)
+	{
+		$this->databaze = $databaze;
+	}
+
+
+	protected function createComponentSelectForm()
+    {
+        $form = new UI\Form;
+
+        $moznosti = $this->databaze->query("SELECT id_souteze, sport, competitionName FROM tipsport_kurzova_nabidka");
+        //$this->moznosti = $moznosti;
+        $moznostiPole = array();
+
+        //$option = array();
+
+        foreach ($moznosti as $moznost) 
+        {
+       		//$moznostiPole[$moznost->id_souteze] = $moznost->competitionName . " - ".  $moznost->sport;
+            //$moznostiPole[$moznost->id_souteze]["onClick"] = "funkce(1)";
+            $moznostiPole[$moznost->id_souteze] = Html::el('options',  $moznost->competitionName . " - ".  $moznost->sport)->onClick("vyber_souteze(".$moznost->id_souteze.",'".$moznost->competitionName."','".$moznost->sport."');");
+
+//echo "<option value=".$sport["id_souteze"]." onClick=\"vyber_souteze(".$sport["id_souteze"].",'".$sport["competitionName"]."','".$sport["sport"]."');\" >".$sport["competitionName"]." (".$sport["sport"].")</option>";           
+
+            
+        }
+
+        $this->template->souteze = array();
+        $this->template->souteze = $moznostiPole;
+
+        //$form->addTextArea("moznosti", "")->setValue(var_dump($this->databaze->table("tipsport_kurzova_nabidka")));
+        
+        /*$form->addMultiSelect("souteze","",$moznostiPole)
+            ->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);")
+            ->addOptionAttributes(array("onClick" => "vyber_souteze(id_souteze, jmeno_souteze, sport)", "xxx" => "www"))
+            ->addOptionAttributes(array("onClick" => "vyber_souteze(1, 2, 3)"));*/
+
+        $form->addMultiSelect("souteze","", $moznostiPole)->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);");
+        
+        $form->addMultiSelect("vybrane_souteze")
+            ->setAttribute("id", "vybrane_souteze")
+            ->setAttribute("onBlur", "oznacit_vsechny(this);")
+            ->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);");
+
+        $form->addText("kurz", "Kurz:")
+            ->setAttribute("style", "position:relative;top:25%;height:50%");
+
+        $form->addSubmit("login", "Registrovat")
+            ->setAttribute("style", "position:relative;top:25%;height:50%");
+
+        $form->onSuccess[] = [$this, "selectFormSucceeded"];
+
+
+        $renderer = $form->getRenderer();
+        //$renderer->wrappers['moznosti']['size'] = 20;
+
+        //echo var_dump($form->getRawValue());
+
+        return $form;
+    }
+
+    // volá se po úspěšném odeslání formuláře
+    public function selectFormSucceeded(UI\Form $form, $values)
+    {
+        // ...
+        //$this->flashMessage("Byl jste úspěšně registrován.");
+
+        //$souteze = $values["souteze"]; //uloží se vybrané ligy jako pole
+        $souteze = $form["vybrane_souteze"]->getRawValue();
+
+
+        $kurz = $values["kurz"]; //zvolený kurz
+
+
+        $podminka = "";
+        for($i=0;$i<count($souteze);$i++)
+        {
+          $podminka = $podminka."tipsport_kurzova_nabidka_zapasy.id_souteze=".$souteze[$i]." OR ";
+        }
+        $podminka = substr($podminka, 0, strlen($podminka)-4);
+        $podminka;
+        //$sql = "SELECT tipsport_kurzova_nabidka.id_souteze, sport, competitionName, tipsport_kurzova_nabidka.url as nabidka_url, tipsport_kurzova_nabidka_zapasy.matchId as matchId, name, tipsport_kurzova_nabidka_zapasy.url as zapasy_url, tipsport_kurzova_nabidka_moznosti.fullName, tipsport_kurzova_nabidka_moznosti.shortName, tipsport_kurzova_nabidka_moznosti.rate  FROM tipsport_kurzova_nabidka, tipsport_kurzova_nabidka_zapasy, tipsport_kurzova_nabidka_moznosti WHERE (".$podminka.") AND tipsport_kurzova_nabidka_zapasy.matchId = tipsport_kurzova_nabidka_moznosti.matchId AND tipsport_kurzova_nabidka.id_souteze = tipsport_kurzova_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate ASC";
+
+        //$sql = "SELECT sport, competitionName, shortName, rate FROM tipsport_kurzova_nabidka, tipsport_kurzova_nabidka_zapasy, tipsport_kurzova_nabidka_moznosti WHERE ".$podminka." AND tipsport_kurzova_nabidka_zapasy.matchId = tipsport_kurzova_nabidka_moznosti.matchId AND tipsport_kurzova_nabidka.id_souteze = tipsport_kurzova_nabidka_moznosti.id_souteze AND rate <= ".$kurz." GROUP BY tipsport_kurzova_nabidka_zapasy.matchId";
+
+        //$sql = "SELECT tipsport_kurzova_nabidka.id_souteze, sport, competitionName, tipsport_kurzova_nabidka.url as nabidka_url, tipsport_kurzova_nabidka_zapasy.matchId as matchId, name, tipsport_kurzova_nabidka_zapasy.url as zapasy_url, tipsport_kurzova_nabidka_moznosti.fullName, GROUP_CONCAT(tipsport_kurzova_nabidka_moznosti.shortName), GROUP_CONCAT(tipsport_kurzova_nabidka_moznosti.rate)  FROM tipsport_kurzova_nabidka, tipsport_kurzova_nabidka_zapasy, tipsport_kurzova_nabidka_moznosti WHERE (".$podminka.") AND tipsport_kurzova_nabidka_zapasy.matchId = tipsport_kurzova_nabidka_moznosti.matchId AND tipsport_kurzova_nabidka.id_souteze = tipsport_kurzova_nabidka_moznosti.id_souteze AND rate <= ".$kurz." GROUP BY matchId";
+        //echo $sql;
+
+        /*SELECT tipsport_kurzova_nabidka.id_souteze, sport, competitionName, tipsport_kurzova_nabidka.url as nabidka_url, tipsport_kurzova_nabidka_zapasy.matchId as matchId, name, tipsport_kurzova_nabidka_zapasy.url as zapasy_url, tipsport_kurzova_nabidka_moznosti.fullName, GROUP_CONCAT(tipsport_kurzova_nabidka_moznosti.shortName), GROUP_CONCAT(tipsport_kurzova_nabidka_moznosti.rate) FROM tipsport_kurzova_nabidka, tipsport_kurzova_nabidka_zapasy, tipsport_kurzova_nabidka_moznosti 
+
+        WHERE (tipsport_kurzova_nabidka_zapasy.id_souteze=1 OR tipsport_kurzova_nabidka_zapasy.id_souteze=2 OR tipsport_kurzova_nabidka_zapasy.id_souteze=3)  
+        AND tipsport_kurzova_nabidka.id_souteze = tipsport_kurzova_nabidka_moznosti.id_souteze
+        AND tipsport_kurzova_nabidka_moznosti.id_souteze = tipsport_kurzova_nabidka_zapasy.id_souteze
+        AND tipsport_kurzova_nabidka_zapasy.matchId = tipsport_kurzova_nabidka_moznosti.matchId
+        AND rate <= 5 GROUP BY matchId*/
+
+        $sql = "SELECT tipsport_kurzova_nabidka_zapasy.matchId as matchId, tipsport_kurzova_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_kurzova_nabidka, tipsport_kurzova_nabidka_zapasy, tipsport_kurzova_nabidka_moznosti WHERE (".$podminka.") AND tipsport_kurzova_nabidka_zapasy.matchId = tipsport_kurzova_nabidka_moznosti.matchId AND tipsport_kurzova_nabidka.id_souteze = tipsport_kurzova_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+        //dotazem si vytáhnu zápasy a také jejich příležitosti, které jsou menší než zvolený kurz
+
+        $data = $this->databaze->query($sql);
+
+        $vypis = "";
+        $this->template->nabidky = array();
+        $this->template->nabidky_kurzy = array();
+        $this->template->nabidky_moznosti = array();
+        $this->template->i = 0;
+        $this->template->kurzy_pole = array();
+        
+        $this->template->kurz_tiketu = 1;
+        $kurz_tiketu = 1;
+        $this->template->kurzy_tiketu = array();
+
+        $this->template->kurzy_pozice = array();
+        $this->template->kurz = $kurz;
+
+        $zapasy_na_tiketu = array();
+        
+
+        $pom_nabidky = array();
+        $pom_nabidky_kurzy = array();
+        $pom_nabidky_moznosti = array();
+        $pom_kurzy_pole = array();
+        $pom_kurzy_pozice = array();
+        $pom_prilezitost_rate = array();
+        $pom_zapasy_na_tiketu = array();
+        $posledni_rate = 1;
+
+        $pom_i = -1;
+
+        $pom_index = 0;
+
+
+        foreach($data as $prilezitost) //projíždím zápasy odpovídající zvolenému nastavení  
+        {
+
+
+            //echo $prilezitost["matchId"]."<br />";
+            $sql = "SELECT sport, competitionName, tipsport_kurzova_nabidka.url as nabidka_url, tipsport_kurzova_nabidka_zapasy.matchId as matchId, name, tipsport_kurzova_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_kurzova_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_kurzova_nabidka_moznosti.rate) as rate FROM tipsport_kurzova_nabidka, tipsport_kurzova_nabidka_zapasy, tipsport_kurzova_nabidka_moznosti WHERE (".$podminka.") AND tipsport_kurzova_nabidka_zapasy.matchId = tipsport_kurzova_nabidka_moznosti.matchId AND tipsport_kurzova_nabidka.id_souteze = tipsport_kurzova_nabidka_moznosti.id_souteze AND tipsport_kurzova_nabidka_zapasy.matchId =".$prilezitost["matchId"]." GROUP BY matchId";
+            //Dotaz by měl získat kompletní řádky do výpisu
+
+            //echo $sql."<br /><br /><br />";
+            //$nabidka = $this->databaze->fetch($sql);
+                        
+
+            //$this->template->nabidky[$this->template->i] = $this->databaze->fetch($sql);
+            array_push($this->template->nabidky, $this->databaze->fetch($sql));
+
+            //echo $prilezitost["matchId"]."<br />";
+            
+            //$nalezeno = array_search($prilezitost["matchId"], $zapasy_na_tiketu); 
+            
+            $nalezeno = false;
+            //array_push($zapasy_na_tiketu, $prilezitost["matchId"]);
+            
+            //$zapasy_na_tiketu[$this->template->i] = $prilezitost["matchId"];
+
+            /*if($this->template->i == 0)
+            {
+                //$zapasy_na_tiketu[$this->template->i] = $prilezitost["matchId"];
+                array_push($zapasy_na_tiketu, $prilezitost["matchId"]);
+                //echo "vlozeni - "; 
+                echo $zapasy_na_tiketu[0]."<br />";
+            }*/ 
+            /*if(count($zapasy_na_tiketu) == 0)
+            {
+                //$zapasy_na_tiketu[$this->template->i] = $prilezitost["matchId"];
+                array_push($zapasy_na_tiketu, $prilezitost["matchId"]);
+                //echo "vlozeni - "; 
+                echo $zapasy_na_tiketu[0]."<br />";
+            }*/
+
+            if($this->template->i > -1)
+            {
+                //$nalezeno = array_search($prilezitost["matchId"], $zapasy_na_tiketu); 
+                //echo var_dump($zapasy_na_tiketu)."<br />";
+                //echo $prilezitost["matchId"]." --- ".var_dump($nalezeno)."-----".(count($zapasy_na_tiketu)-1)."<br />";
+                //echo end($this->template->nabidky)["matchId"]."<br />";
+                /*for($i=0;$i<(count($zapasy_na_tiketu)-1);$i++)
+                {
+                    if($zapasy_na_tiketu[$i] == $prilezitost["matchId"])
+                    {
+                        $nalezeno = true;
+                        //echo "nalezeno<br />";
+                    }
+                    else
+                    {
+                        $nalezeno = false;
+                        //echo "xxx";
+                    }
+                }*/
+                
+                //Debugger::dump($zapasy_na_tiketu);
+                //Debugger::barDump($zapasy_na_tiketu);
+                /*foreach($zapasy_na_tiketu as $zapas)
+                {   
+                    if($zapas == $prilezitost["matchId"])
+                    {
+                        $nalezeno = true;
+                        //echo "nalezeno<br />";
+                        break;
+                    }                   
+                    //else
+                    //{
+                        //$nalezeno = false;
+                        //echo "nenalezeno<br />";
+                        //break;
+                        //echo "xxx";
+                    //}
+                }*/
+                //echo "hledani";  
+            }
+            //echo var_dump($nalezeno)."<br />";
+            
+            if($nalezeno)
+            {
+                /*array_push($pom_nabidky, array_shift($this->template->nabidky));
+                //echo var_dump($pom_nabidky)."<br /><br /><br />";
+                //$pom_nabidky_kurzy[$pom_index] = explode(",", $this->template->nabidky[$this->template->i]["rate"]);
+                array_push($pom_nabidky_kurzy, end($this->template->nabidky)["rate"]);
+                //$pom_nabidky_moznosti[$pom_index] = explode(",", $this->template->nabidky[$this->template->i]["shortName"]);
+                array_push($pom_nabidky_moznosti, explode(",", end($this->template->nabidky)["shortName"]));
+                //$pom_kurzy_pole[$pom_index] = array_combine($pom_nabidky_moznosti[$pom_index], $pom_nabidky_kurzy[$pom_index]);
+                
+                //echo var_dump(end($pom_nabidky_moznosti))." --------- ".var_dump(end($pom_nabidky_kurzy))."<br />";
+                //echo var_dump(end($pom_nabidky_moznosti))."<br />";
+                //echo var_dump(end($pom_nabidky_kurzy))."<br />";
+
+                array_push($pom_kurzy_pole, array_combine(end($pom_nabidky_moznosti), explode(",",end($pom_nabidky_kurzy))));
+
+                //echo var_dump($pom_kurzy_pole)."<br />";
+
+                array_push($pom_kurzy_pozice, $prilezitost["shortName"]);
+
+                array_push($pom_prilezitost_rate, $prilezitost["rate"]);
+                //$pom_index++;      
+                //echo $prilezitost["matchId"]."<br />";
+                //echo "y";
+
+                array_push($zapasy_na_tiketu, end($this->template->nabidky)["matchId"]);
+
+                $nalezeno = false;*/
+                
+            }
+            else
+            {
+
+                //echo "x";
+
+                //$zapasy_na_tiketu[$this->template->i] = $prilezitost["matchId"];
+                
+                //array_push($zapasy_na_tiketu, $prilezitost["matchId"]);
+                //array_push($zapasy_na_tiketu, end($this->template->nabidky)["matchId"]);
+
+
+                //echo "ID: ".$prilezitost["matchId"]."<br />";
+
+
+                //Debugger::barDump(end($this->template->nabidky)["name"])."<br />";
+                $nalezeno = array_search($prilezitost["name"], $this->template->nabidky);
+                Debugger::barDump($nalezeno)."<br />";
+
+
+                /*for($i=0;$i<(count($this->template->nabidky)-1);$i++)
+                //for($i=(count($this->template->nabidky)-1);$i>0;$i--)
+                {
+                    //Debugger::barDump($this->template->nabidky[$i]["name"])."<br />";
+                    //Debugger::barDump(end($this->template->nabidky)["name"])."<br />";
+                    //Debugger::barDump($this->template->nabidky[$i]["name"]."<br />";
+                    /*if($this->template->nabidky[$i]["name"] == end($this->template->nabidky)["name"]) 
+                    {
+                        echo $this->template->nabidky[$i]["name"]." --- ".end($this->template->nabidky)["name"]."<br />";
+                        $nalezeno = true;
+                        break;
+                    }*/
+                    /*if(strcmp($this->template->nabidky[$i]["name"],end($this->template->nabidky)["name"])==0) 
+                    {
+                        //echo $this->template->nabidky[$i]["name"]." --- ".end($this->template->nabidky)["name"]."<br />";
+                        $nalezeno = true;
+                        //break;
+                    }*/
+                    /*if(strcmp($this->template->nabidky[$i]["name"],$prilezitost["name"])==0 && $pom_i < $this->template->i) 
+                    {
+                        //echo $this->template->nabidky[$i]["name"]." --- ".end($this->template->nabidky)["name"]."<br />".$this->template->i."<br />";
+                        $nalezeno = true;
+                        $pom_i = $this->template->i;
+
+                        //array_push($pom_nabidky, array_shift($this->template->nabidky));
+                        array_push($pom_nabidky, array_pop($this->template->nabidky));
+                        //echo var_dump($pom_nabidky)."<br /><br /><br />";
+                        //$pom_nabidky_kurzy[$pom_index] = explode(",", $this->template->nabidky[$this->template->i]["rate"]);
+                        //array_push($pom_nabidky_kurzy, end($this->template->nabidky)["rate"]);
+                        array_push($pom_nabidky_kurzy, end($pom_nabidky)["rate"]);
+                        //$pom_nabidky_moznosti[$pom_index] = explode(",", $this->template->nabidky[$this->template->i]["shortName"]);
+                        //array_push($pom_nabidky_moznosti, explode(",", end($this->template->nabidky)["shortName"]));
+                        array_push($pom_nabidky_moznosti, explode(",", end($pom_nabidky)["shortName"]));
+                        //$pom_kurzy_pole[$pom_index] = array_combine($pom_nabidky_moznosti[$pom_index], $pom_nabidky_kurzy[$pom_index]);
+                        //echo var_dump(end($pom_nabidky_moznosti))." --------- ".var_dump(end($pom_nabidky_kurzy))."<br />";
+                        //echo var_dump(end($pom_nabidky_moznosti))."<br />";
+                        //echo var_dump(end($pom_nabidky_kurzy))."<br />";
+                        array_push($pom_kurzy_pole, array_combine(end($pom_nabidky_moznosti), explode(",",end($pom_nabidky_kurzy))));
+                        //echo var_dump($pom_kurzy_pole)."<br />";
+                        array_push($pom_kurzy_pozice, $prilezitost["shortName"]);
+                        array_push($pom_prilezitost_rate, $prilezitost["rate"]);
+                        //break;
+                    }
+                }*/
+
+                if(!$nalezeno)
+                {
+                    Debugger::barDump(end($this->template->nabidky)["matchId"]);
+
+                    //$kurzy_nabidka = explode(",", $nabidka["rate"]);
+                    //$this->template->nabidky_kurzy[$this->template->i] = explode(",", $this->template->nabidky[$this->template->i]["rate"]);
+                    //$this->template->i = array_push($this->template->nabidky_kurzy, explode(",", end($this->template->nabidky)["rate"]));
+                    array_push($this->template->nabidky_kurzy, explode(",", end($this->template->nabidky)["rate"]));
+
+                    //$kurzy_moznosti = explode(",", $nabidka["shortName"]);
+                    //$this->template->nabidky_moznosti[$this->template->i] = explode(",", $this->template->nabidky[$this->template->i]["shortName"]);
+                    ///$this->template->i = array_push($this->template->nabidky_moznosti, explode(",", end($this->template->nabidky)["shortName"]));
+                    array_push($this->template->nabidky_moznosti, explode(",", end($this->template->nabidky)["shortName"]));
+
+                    //$kurzy_pole = array_combine($kurzy_moznosti, $kurzy_nabidka);
+                    //$this->template->kurzy_pole[$this->template->i] = array_combine($this->template->nabidky_moznosti[$this->template->i], $this->template->nabidky_kurzy[$this->template->i]); // kurzy pro výpis index je příležitost, hodnota je kurz
+                    //$this->template->i = array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                    array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+
+                    //$this->template->kurzy_pozice[$this->template->i] = array_search(min($this->template->kurzy_pole[$this->template->i]), $this->template->kurzy_pole[$this->template->i]); 
+                    //$this->template->kurzy_pozice[$this->template->i] = $prilezitost["shortName"];
+                    //$this->template->i = array_push($this->template->kurzy_pozice, $prilezitost["shortName"]);
+                    array_push($this->template->kurzy_pozice, $prilezitost["shortName"]);
+
+
+                    //$kurz_tiketu = $this->template->kurz_tiketu * $this->template->kurzy_pole[$prilezitost["shortName"]];
+                    
+                    $kurz_tiketu = $kurz_tiketu * $prilezitost["rate"];
+
+                    
+                    $posledni_rate = $prilezitost["rate"];
+                    for($i=0;$i<count($pom_prilezitost_rate);$i++)
+                    {
+                        if($kurz_tiketu < $kurz)
+                        {
+                            $kurz_tiketu = $kurz_tiketu / $posledni_rate;
+                            $posledni_rate = array_shift($pom_prilezitost_rate);
+                            echo $kurz_tiketu." * ".$posledni_rate." = ";
+                            $kurz_tiketu = $kurz_tiketu * $posledni_rate;
+                            echo $kurz_tiketu."<br />";
+                            //Debugger::barDump($posledni_rate);
+                        }
+                    }
+
+                    //echo  "kurz tiketu: ".$kurz_tiketu."---- prilezitost: ".$prilezitost["rate"]."<br />";
+                    //echo  "kurz tiketu: ".$kurz_tiketu."---- prilezitost: ".$posledni_rate."<br />";
+
+                    //echo var_dump($this->template->kurzy_tiketu)."<br />";   
+                    //Debugger::barDump($kurz_tiketu)."<br />";
+
+                    if($kurz_tiketu >= $kurz)
+                    {
+                        //$this->template->kurzy_tiketu[$this->template->i-2] = $kurz_tiketu/$prilezitost["rate"];
+                        //$this->template->kurzy_tiketu[$this->template->i-1] = $kurz_tiketu/$posledni_rate;
+
+                        //$kurz_tiketu = $kurz_tiketu / $prilezitost["rate"];
+                        $kurz_tiketu = $kurz_tiketu / $posledni_rate;
+
+                        $this->template->kurzy_tiketu[$this->template->i - 1] = $kurz_tiketu;
+                        //array_push($this->template->kurzy_tiketu, $kurz_tiketu);
+
+                        //$kurz_tiketu = $prilezitost["rate"];
+
+                        //echo var_dump($this->template->kurzy_tiketu)."<br />";
+
+                        //$kurz_tiketu = 1;
+                        $kurz_tiketu = $prilezitost["rate"];
+
+                        for($i=0;$i<count($pom_kurzy_pole);$i++)
+                        {
+                            
+                            array_push($this->template->nabidky,array_shift($pom_nabidky));
+                            //echo "--- ".var_dump($pom_nabidky)."<br /><br />";
+                            array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                            array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+
+                            
+                            //array_push($zapasy_na_tiketu, array_shift($pom_zapasy_na_tiketu));                        
+
+                            /*$this->template->i = array_push($this->template->nabidky,$pom_nabidky[$i]);
+                            $this->template->i = array_push($this->template->kurzy_pole,$pom_kurzy_pole[$i]);
+                            $this->template->i = array_push($this->template->kurzy_pozice,$pom_kurzy_pozice[$i]);*/
+                        }
+
+                        $pom_nabidky = array();
+                        $pom_nabidky_kurzy = array();
+                        $pom_nabidky_moznosti = array();
+                        $pom_kurzy_pole = array();
+                        $pom_kurzy_pozice = array();
+
+                        /*array_push($this->template->nabidky, array_shift($pom_nabidky));
+                        array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                        array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));*/   
+                    }
+
+
+
+
+
+                    $this->template->i++;
+                }
+
+                $nalezeno = false;
+
+                //obsahuje pozice nejmenších pro výchozí označení
+                
+                //$this->template->kurz_tiketu = $this->template->kurz_tiketu * min($this->template->nabidky_kurzy[$this->template->i]);
+                
+
+                //echo var_dump($this->template->kurzy_pole)."----------".var_dump($prilezitost["shortName"])."<br /><br />";
+
+                //$kurz_tiketu = $this->template->kurz_tiketu * $this->template->kurzy_pole[$prilezitost["shortName"]];
+                /*$kurz_tiketu = $kurz_tiketu * $prilezitost["rate"];
+                $posledni_rate = $prilezitost["rate"];
+                for($i=0;$i<count($pom_prilezitost_rate);$i++)
+                {
+                    if($kurz_tiketu < $kurz)
+                    {
+                        $kurz_tiketu = $kurz_tiketu / $posledni_rate;
+                        $posledni_rate = array_shift($pom_prilezitost_rate);
+                        $kurz_tiketu = $kurz_tiketu * $posledni_rate;
+                    }
+                }
+
+                //echo  "kurz tiketu: ".$kurz_tiketu."---- prilezitost: ".$prilezitost["rate"]."<br />";
+                //echo  "kurz tiketu: ".$kurz_tiketu."---- prilezitost: ".$posledni_rate."<br />";
+
+                //echo var_dump($this->template->kurzy_tiketu)."<br />";                    
+                if($kurz_tiketu >= $kurz)
+                {
+                    //$this->template->kurzy_tiketu[$this->template->i-2] = $kurz_tiketu/$prilezitost["rate"];
+                    $this->template->kurzy_tiketu[$this->template->i-2] = $kurz_tiketu/$posledni_rate;
+                    //$kurz_tiketu = $prilezitost["rate"];
+
+                    //echo var_dump($this->template->kurzy_tiketu)."<br />";
+
+                    $kurz_tiketu = 1;
+
+                    //$zapasy_na_tiketu = array();
+
+                    //$zapasy_na_tiketu[0] = 0;
+                    //echo "KURZ ".$this->template->kurzy_tiketu[$this->template->i-2]."<br />";
+                    
+                    //echo var_dump($pom_nabidky)." ---------- ".var_dump($pom_kurzy_pole)." ---------- ".var_dump($pom_kurzy_pozice)."<br /><br /><br/>";
+                    //echo count($pom_nabidky)." --- ".count($pom_kurzy_pole)." --- ".count($pom_kurzy_pozice)."<br />";
+                    //echo var_dump($pom_kurzy_pole)."<br />";
+
+                    //echo var_dump($pom_nabidky)."<br />";
+                    //echo var_dump($this->template->nabidky)."<br /><br />";
+                    for($i=0;$i<count($pom_kurzy_pole);$i++)
+                    {
+                        
+                        array_push($this->template->nabidky,array_shift($pom_nabidky));
+                        //echo "--- ".var_dump($pom_nabidky)."<br /><br />";
+                        array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                        array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+
+                        
+                        //array_push($zapasy_na_tiketu, array_shift($pom_zapasy_na_tiketu));                        
+
+                        /*$this->template->i = array_push($this->template->nabidky,$pom_nabidky[$i]);
+                        $this->template->i = array_push($this->template->kurzy_pole,$pom_kurzy_pole[$i]);
+                        $this->template->i = array_push($this->template->kurzy_pozice,$pom_kurzy_pozice[$i]);*/
+                    /*}*/
+
+                    /*$pom_nabidky = array();
+                    $pom_nabidky_kurzy = array();
+                    $pom_nabidky_moznosti = array();
+                    $pom_kurzy_pole = array();
+                    $pom_kurzy_pozice = array();*/
+
+                    /*array_push($this->template->nabidky, array_shift($pom_nabidky));
+                    array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                    array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));*/
+                //}
+                
+                
+
+                //$vypis = $vypis . "<div class='large-7 columns kurzy_polozka'>".$nabidka["name"]."</div><div class='large-1 columns text-center kurzy'>".(isset($kurzy_pole["1"]) ? $kurzy_pole["1"] : 'x')."</div><div class='large-1 columns text-center kurzy'>".(isset($kurzy_pole["10"]) ? $kurzy_pole["10"] : 'x')."</div><div class='large-1 columns text-center kurzy'>".(isset($kurzy_pole["0"]) ? $kurzy_pole["0"] : 'x')."</div><div class='large-1 columns text-center kurzy'>".(isset($kurzy_pole["02"]) ? $kurzy_pole["02"] : 'x')."</div><div class='large-1 columns text-center kurzy'>".(isset($kurzy_pole["2"])? $kurzy_pole["2"] :  'x')."</div>";
+
+                //$this->template->i++;
+                //$this->template->i--;
+            }
+        }
+        //$this->template->kurzy_tiketu[$this->template->i-1] = $kurz_tiketu;
+        //$this->template->kurzy_tiketu[$this->template->i-1] = 1;
+
+        //$this->template->nabidka_kurzu = $vypis;
+
+    }
+
+	public function renderDefault()
+	{
+		$this->template->anyVariable = "any value";
+        /*$this->template->moznosti = $this->moznosti;
+        echo "xxx".var_dump($this->template->moznosti);*/
+	}
+
+
+
+}

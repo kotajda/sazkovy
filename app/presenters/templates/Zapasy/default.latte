@@ -1,0 +1,148 @@
+{block content}     
+
+<div class="row callout">
+  {form selectForm}
+    <div class="large-4 columns zapasy_form_input">
+      {input souteze}
+    </div>
+
+    <div class="large-4 columns zapasy_form_input">
+      {snippet vybrane}
+        {input vybrany_zapas}
+      {/snippet}
+    </div>
+    <div class="large-4 columns zapasy_form_tlac">
+        {input zobrazit}
+    </div>
+  {/form}
+  </div>
+
+
+{if isset($id_zapasu)}
+<h2 style="float:left;">{$nazev_zapasu}</h2><span style="margin-left:10px;line-height:50px;">({$nazev_souteze["sport"]} - {$nazev_souteze["competitionName"]})</span>
+{/if}
+
+{if isset($id_zapasu)}
+  <iframe src="https://www.tipsport.cz/EventLayerAction.do?matchId={$id_zapasu}&skin=&pid=6764&sid=7784" width="800" height="590" frameborder="0"></iframe>
+{/if}
+
+
+
+{if isset($kurzy)}
+  <h2>Porovnání kurzů ke zvolenému zápasu</h2>
+  <div class="row callout">
+  <div class='large-7 columns'>Sázková kancelář</div>
+  <div class='large-1 columns text-center kurzy' id=''>1</div>
+  <div class='large-1 columns text-center kurzy' id=''>10</div>
+  <div class='large-1 columns text-center kurzy' id=''>0</div>
+  <div class='large-1 columns text-center kurzy' id=''>02</div>
+  <div class='large-1 columns text-center kurzy' id=''>2</div>
+  <hr />
+  <div class='large-7 columns'>Tipsport</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["tipsport"]["1"]) ? $kurzy["tipsport"]["1"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["tipsport"]["10"]) ? $kurzy["tipsport"]["10"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["tipsport"]["0"]) ? $kurzy["tipsport"]["0"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["tipsport"]["02"]) ? $kurzy["tipsport"]["02"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["tipsport"]["2"])? $kurzy["tipsport"]["2"] :  'x')}</div>
+
+  <div class='large-7 columns'>Fortuna</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["fortuna"]["1"]) ? $kurzy["fortuna"]["1"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["fortuna"]["10"]) ? $kurzy["fortuna"]["10"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["fortuna"]["0"]) ? $kurzy["fortuna"]["0"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["fortuna"]["02"]) ? $kurzy["fortuna"]["02"] : 'x')}</div>
+  <div class='large-1 columns text-center kurzy' id='' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);'>{(isset($kurzy["fortuna"]["2"])? $kurzy["fortuna"]["2"] :  'x')}</div>
+  </div>
+{/if}
+
+
+{if isset($data)}
+<div class='panel'>
+  {if count($data) == 0}
+    <p>Žádné analýzy tohoto zápasu nejsou k dispozici...</p>
+  {else}
+  <h2>Dostupné analýzy od fanoušků</h2>
+  {foreach $data as $analyza}
+    <div class="row callout">
+    <div class='large-3 columns vypis_zahlavi'>Autor: <a href='"{$analyza["authorProfileLink"]}"'>"{$analyza["userName"]}"</a></div>
+    <div class='large-3 columns vypis_zahlavi'>Co: "{$analyza["matchName"]}"</div>
+    <div class='large-3 columns vypis_zahlavi'>Tip: "{$analyza["tip"]}"</div>
+    <div class='large-3 columns vypis_zahlavi'>Kurz: "{$analyza["rate"]}"</div>
+    <div clasś='large-12 columns'>{print($analyza["text"])}</div>
+    <a href='{$analyza["url"]}"' target='_blank' class='button expand'>Přejít k dalším informacím</a>
+    </div>
+  {/foreach}
+  {/if}
+</div>
+{/if }
+
+{if isset($data_tiket)}
+{if count($data_tiket) == 0}
+    <p>Žádné vzorové tikety s tímto zápasem nejsou k dispozici...</p>
+{else}
+<h2>Byly vsazeny tikety s tímto zápasem</h2>
+{php $nazev_zapasu = str_replace(" - ", "-",$nazev_zapasu)}
+{foreach $data_tiket as $tiket}
+  <div class='callout large-6 columns'>
+    <div class='row'>
+      {$tiket["id_tiketu"]}
+      <div class='large-6 columns vypis_zahlavi'>Kdo vsadil:<a href='"{$tiket["author"]}"'>{$tiket["userName"]}</a></div>
+      <div class='large-6 columns vypis_zahlavi'>Kurz: <strong>"{$tiket["rate"]}"</strong></div>
+      <div class='large-6 columns vypis_zahlavi'>Částka: <strong>{$tiket["amountPaid"]} {$tiket["currency"]}</strong></div>
+      <div class='large-6 columns vypis_zahlavi'>Možná výhra: <strong>{$tiket["potentialWin"]} {$tiket["currency"]}</strong></div>
+    </div>
+
+    <hr />
+      <div class='row'>
+      <div class='large-6 columns text-right'>Událost</div>
+      <div class='large-6 columns'>Tip</div>
+      <hr />
+
+        {for $j=0;$j<count($data_zapasy[$tiket["id_tiketu"]]);$j++}
+          {if $data_zapasy[$tiket["id_tiketu"]][$j]["eventName"] == $nazev_zapasu}
+            <div class='tiket_tipy'><div class='large-6 columns text-right'><strong>{$data_zapasy[$tiket["id_tiketu"]][$j]["eventName"]}</strong></div>
+            <div class='large-6 columns'><strong>{$data_zapasy[$tiket["id_tiketu"]][$j]["opportunityfullName"]}</strong></div></div>
+          {else}
+            <div class='tiket_tipy'><div class='large-6 columns text-right'>{$data_zapasy[$tiket["id_tiketu"]][$j]["eventName"]}</div>
+            <div class='large-6 columns'>{$data_zapasy[$tiket["id_tiketu"]][$j]["opportunityfullName"]}</div></div>
+          {/if}
+        {/for}
+
+      </div>
+    
+    
+    <a href='"{$tiket ["url"]}"' target='_blank' class='button expanded' style='margin-top:25px;'>Vsadit tento tiket s možnou výhrou <strong>{$tiket["potentialWin"]} {$tiket["currency"]}</strong></a>
+      
+  </div>
+{/foreach}
+{/if}
+{/if}
+
+
+{include jsCallback, input => souteze, link => klikSouteze}
+
+{define jsCallback}
+<script src="{$basePath}/js/vendor/jquery.js"></script>
+    <script src="{$basePath}/js/vendor/what-input.js"></script>
+    <script src="{$basePath}/js/vendor/foundation.js"></script>
+    <script src="{$basePath}/js/app.js"></script>
+    <script src="{$basePath}/js/nette.ajax.js"></script>  
+
+<script>
+$(function () {
+    $.nette.init();
+});
+
+$('#' + {$control["selectForm"][$input]->htmlId}).on('change', function() {
+    $.nette.ajax({
+        type: 'GET',
+        url: {link {$link}!},
+        data: {
+            'value': $(this).val(), 
+        }
+    });
+});
+
+</script>
+{/define}
+
+{/block content}

@@ -1,0 +1,1114 @@
+    //GeneratorPresener.php
+    public function selectFormSucceeded2(UI\Form $form, $values)
+    {
+        $souteze = $form["vybrane_souteze"]->getRawValue(); //zvoleé soutěže
+        $kurz = $values["kurz"]; //zvolený kurz
+        $sazkovka = $values["sazkovka"];
+
+        $podminka = "";
+        $podminka_fortuna = "";
+        for($i=0;$i<count($souteze);$i++)
+        {
+          $podminka = $podminka."tipsport_zakladni_nabidka_zapasy.id_souteze=".$souteze[$i]." OR ";
+          $podminka_fortuna = $podminka_fortuna."tipsport_zakladni_nabidka_souteze.id=".$souteze[$i]." OR ";
+        }
+        $podminka = substr($podminka, 0, strlen($podminka)-4); //vytvoří se podmínka ze soutěží pro výběr z databáze
+        $podminka_fortuna = substr($podminka_fortuna, 0, strlen($podminka_fortuna)-4);
+
+        /*
+        $sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+        $data = $this->databaze->query($sql);
+        */
+
+        $this->template->nabidky = array();
+        $this->template->kurzy_pozice = array(); 
+        $this->template->nabidky_kurzy = array();
+        $this->template->nabidky_moznosti = array();
+        $this->template->kurzy_pole = array();
+        
+        $this->template->nabidky_moznosti_id_pole = array();
+        $nabidky_moznosti_id = array();
+        $pom_nabidky_moznosti_id_pole = array();
+        $pom_nabidky_moznosti_id = array();
+        
+        //vytvořím si pomocné pole, do kterých si dám  duplicity z tiketu, které budou na druhém tiketu...
+        $pom_nabidky = array();
+        $pom_kurzy = array();
+        $pom_kurzy_pozice = array(); 
+        $pom_nabidky_kurzy = array();
+        $pom_nabidky_moznosti = array();
+        $pom_kurzy_pole = array();
+
+        $this->template->i = 0;
+        $this->template->id_tiketu = array(); //id jednotlivých vygenerovaných tiketů
+        $id_tiketu = 1;
+        $this->template->kurz_tiketu = array(); //kurzy pro jednotlivé vygenerované tikety
+        $kurz_tiketu = 1; //průběžný kurz tiketu
+        $this->template->tiket = array(); //určuje, kde končí každý jednotlivý tiket... tam, kde je zapsána 1, je pozice konce tiketu
+        $nalezeno = false; //určuje, jestli je daný zápas na tiketu
+        $zapasy_na_tiketu = array();
+        
+        if($sazkovka == "tipsport")
+        {
+        $sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+        //echo $sql;
+        $data = $this->databaze->query($sql);
+        foreach($data as $prilezitost) //projíždím zápasy odpovídající zvolenému nastavení  
+        {
+            $sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.id as id_souteze, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitost["matchId"]." GROUP BY matchId";
+            //echo $sql."<br /><br />";
+
+            $nabidky = $this->databaze->fetch($sql);
+            
+            //echo var_dump($nabidky)."<br /><br />";
+            //echo $nabidky["shortName"]."<br /><br />";
+            
+            $nalezeno = in_array($nabidky, $zapasy_na_tiketu);
+            if($nalezeno)
+            {
+                //echo "x<br />";
+                //naplnění pomocných polí duplicitními zápasama, které budou na začátku dalšího tiketu
+                array_push($pom_nabidky, $nabidky);
+                array_push($pom_kurzy, $prilezitost["rate"]);
+                array_push($pom_kurzy_pozice, $prilezitost["shortName"]);
+                array_push($pom_nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($pom_nabidky_moznosti, explode(",", $nabidky["shortName"]));
+                array_push($pom_kurzy_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_kurzy)));
+
+                array_push($pom_nabidky_moznosti_id, explode(",", end($pom_nabidky)["opportunityId"]));
+                array_push($pom_nabidky_moznosti_id_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_moznosti_id)));
+            }
+            else
+            {
+                array_push($zapasy_na_tiketu,$nabidky);
+                //naplňování tiketu zápasama
+                array_push($this->template->nabidky, $nabidky);
+                array_push($this->template->kurzy_pozice, $prilezitost["shortName"]);
+                array_push($this->template->nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($this->template->nabidky_moznosti, explode(",", $nabidky["shortName"]));
+                array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                
+                array_push($nabidky_moznosti_id, explode(",", end($this->template->nabidky)["opportunityId"]));
+                array_push($this->template->nabidky_moznosti_id_pole, array_combine(end($this->template->nabidky_moznosti), end($nabidky_moznosti_id)));
+
+                $this->template->i++;
+                array_push($this->template->id_tiketu,$id_tiketu);
+                $kurz_tiketu = $kurz_tiketu * $prilezitost["rate"];
+                
+                if($kurz_tiketu > $kurz + 0.5)
+                {
+                    $kurz_tiketu = $kurz_tiketu / $prilezitost["rate"];
+                    $this->template->tiket[$this->template->i - 2] = 1;
+                    $this->template->kurz_tiketu[$this->template->i - 2] = $kurz_tiketu;
+                    $kurz_tiketu = $prilezitost["rate"];
+                    $zapasy_na_tiketu = array();
+                       
+                    for($i=0;$i<count($pom_nabidky);$i++)
+                    {
+                        if($kurz_tiketu * $pom_kurzy[$i] < $kurz + 0.5)
+                        {
+                            //echo count($this->template->nabidky)." --- ".count($this->template->kurzy_pozice)." --- ".count($this->template->kurzy_pole)."<br />";
+
+                            $pom_nabidka = array_shift($pom_nabidky);
+                            array_push($zapasy_na_tiketu, $pom_nabidka);
+                            /*array_push($this->template->nabidky, $pom_nabidka);
+                            array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+                            array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));*/
+
+                            $this->template->nabidky[count($this->template->nabidky)] = $this->template->nabidky[count($this->template->nabidky)-2];
+                            $this->template->nabidky[count($this->template->nabidky)-2] = $pom_nabidka;
+                            $this->template->kurzy_pozice[count($this->template->kurzy_pozice)] = $this->template->kurzy_pozice[count($this->template->kurzy_pozice)-2];
+                            $this->template->kurzy_pozice[count($this->template->kurzy_pozice)-2] = array_shift($pom_kurzy_pozice);
+                            $this->template->kurzy_pole[count($this->template->kurzy_pole)] = $this->template->kurzy_pole[count($this->template->kurzy_pole)-2];
+                            $this->template->kurzy_pole[count($this->template->kurzy_pole)-2] = array_shift($pom_kurzy_pole);
+                            //echo $pom_nabidka["name"]."<hr />";
+                            //echo $pom_nabidky["name"]."<hr />";
+                            //dump($pom_nabidky);
+                            //echo count($this->template->nabidky)." --- ".count($this->template->kurzy_pozice)." --- ".count($this->template->kurzy_pole)."<br />";
+                            
+                            //$predposledni = count($this->template->nabidky) - 1;
+                            //array_splice($zapasy_na_tiketu, $predposledni, 0, $pom_nabidka);
+                            /*array_splice($this->template->nabidky, $predposledni, 0, $pom_nabidka);
+                            array_splice($this->template->kurzy_pozice, $predposledni, 0, array_shift($pom_kurzy_pozice));
+                            array_splice($this->template->kurzy_pole, $predposledni, 0, array_shift($pom_kurzy_pole));*/
+
+                            /*array_splice($this->template->nabidky, (count($this->template->nabidky) - 2), 0, $pom_nabidka);
+                            array_splice($this->template->kurzy_pozice, (count($this->template->kurzy_pozice) -2), 0, array_shift($pom_kurzy_pozice));
+                            array_splice($this->template->kurzy_pole, (count($this->template->kurzy_pole) - 2), 0, array_shift($pom_kurzy_pole));*/
+
+                            //echo count($this->template->nabidky)." --- ".count($this->template->kurzy_pozice)." --- ".count($this->template->kurzy_pole)."<br />";
+
+                            /*array_unshift($zapasy_na_tiketu, $pom_nabidka);
+                            array_unshift($this->template->nabidky, $pom_nabidka);
+                            array_unshift($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+                            array_unshift($this->template->kurzy_pole, array_shift($pom_kurzy_pole));*/
+
+                            /*$pom_nabidka = $pom_nabidky;
+                            array_unshift($zapasy_na_tiketu, $pom_nabidka);
+                            array_unshift($this->template->nabidky, $pom_nabidka);
+                            array_unshift($this->template->kurzy_pozice, $pom_kurzy_pozice);
+                            array_unshift($this->template->kurzy_pole, $pom_kurzy_pole);   */                         
+
+                            array_shift($pom_nabidky_kurzy);
+                            array_shift($pom_nabidky_moznosti);
+                            //array_push($this->template->nabidky_moznosti_id_pole,array_shift($pom_nabidky_moznosti_id_pole));
+                            array_splice($this->template->nabidky_moznosti_id_pole, (count($this->template->nabidky_moznosti_id_pole)-1), 0,array_shift($pom_nabidky_moznosti_id_pole));
+                            //array_unshift($this->template->nabidky_moznosti_id_pole,array_shift($pom_nabidky_moznosti_id_pole));
+                            //array_unshift($this->template->nabidky_moznosti_id_pole,$pom_nabidky_moznosti_id_pole);
+
+                            $this->template->i++;
+                            //array_push($this->template->id_tiketu,$id_tiketu);
+                            array_splice($this->template->id_tiketu, (count($this->template->id_tiketu)-1), 0, $id_tiketu);
+                            //array_unshift($this->template->id_tiketu,$id_tiketu);
+                            //array_unshift($this->template->id_tiketu,$id_tiketu);
+                            $kurz_tiketu = $kurz_tiketu * array_shift($pom_kurzy);
+                            //$kurz_tiketu = $kurz_tiketu * array_shift($pom_kurzy);
+                        }
+                    }
+                    $id_tiketu++;
+
+                    /*$pom_nabidky = array();
+                    $pom_kurzy = array(); 
+                    $pom_kurzy_pozice = array(); 
+                    $pom_nabidky_kurzy = array();
+                    $pom_nabidky_moznosti = array();
+                    $pom_kurzy_pole = array();*/
+                }
+            }
+        }
+        }
+        else if($sazkovka == "fortuna")
+        {
+        $data = $this->databaze->query("SELECT sport, competitionName FROM tipsport_zakladni_nabidka_souteze WHERE ".$podminka_fortuna);
+        $sql_fortuna_podminka_souteze = "";
+        $sql_fortuna_podminka_sporty = "";
+        foreach ($data as $souteze) 
+        {
+            //echo $souteze["competitionName"]."<br />";
+            $nazev_souzeze = substr($souteze["competitionName"],0,6);
+            //echo $nazev_souzeze."<br />";
+            if(is_numeric(substr($nazev_souzeze, 0,1)))
+            {
+                $nazev_souzeze = str_replace(" ", "", $nazev_souzeze);
+            }
+            //echo $nazev_souzeze."<br />";
+
+            //$sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".substr($souteze["competitionName"],0,5)."%' OR ";
+            $sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".$nazev_souzeze."%' OR ";
+            //echo explode("-",$souteze["sport"])[0]."<br />";
+            $nazev_kategorie = explode(" - ",$souteze["sport"])[0];
+            if($nazev_kategorie == "Lední hokej")
+            {
+                $nazev_kategorie = "Hokej";
+            }
+            //echo $nazev_kategorie."<hr />";
+            $sql_fortuna_podminka_sporty = $sql_fortuna_podminka_sporty."fortuna_nabidka_kategorie.nazev_kategorie LIKE '%".$nazev_kategorie."%' OR ";
+        }
+        $sql_fortuna_podminka_souteze = substr($sql_fortuna_podminka_souteze, 0, strlen($sql_fortuna_podminka_souteze)-4);
+        $sql_fortuna_podminka_sporty = substr($sql_fortuna_podminka_sporty, 0, strlen($sql_fortuna_podminka_sporty)-4);
+
+
+
+        //$sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+
+        $sql = "SELECT fortuna_nabidka_zapasy.id_zapasu as matchId, fortuna_nabidka_sazky_moznosti.nazev_moznosti as shortName, fortuna_nabidka_sazky_moznosti.kurz_moznosti as rate, fortuna_nabidka_zapasy.nazev_zapasu as name FROM fortuna_nabidka_zapasy, fortuna_nabidka_sazky_moznosti, fortuna_nabidka_turnaje, fortuna_nabidka_kategorie WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.")
+            AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie
+            AND fortuna_nabidka_turnaje.id_kategorie = fortuna_nabidka_zapasy.id_kategorie
+            AND fortuna_nabidka_zapasy.id_kategorie = fortuna_nabidka_sazky_moznosti.id_kategorie
+
+            AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje
+            AND fortuna_nabidka_zapasy.id_turnaje = fortuna_nabidka_sazky_moznosti.id_turnaje
+
+            AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+            AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_sazky
+            AND (nazev_moznosti ='1' OR nazev_moznosti ='10' OR nazev_moznosti ='0' OR nazev_moznosti ='02' OR nazev_moznosti ='2')
+            AND kurz_moznosti <= ".$kurz." ORDER BY kurz_moznosti";
+        //echo $sql;
+        
+        $data = $this->databaze->query($sql);
+        foreach($data as $prilezitost) //projíždím zápasy odpovídající zvolenému nastavení  
+        {
+            //$sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.id as id_souteze, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitost["matchId"]." GROUP BY matchId";
+            //echo $sql."<br /><br />";
+
+            $sql = "SELECT fortuna_nabidka_kategorie.nazev_kategorie as sport, fortuna_nabidka_turnaje.nazev_turnaje as competitionName, fortuna_nabidka_turnaje.id_turnaje as id_souteze, fortuna_nabidka_zapasy.id_zapasu as matchId, fortuna_nabidka_zapasy.nazev_zapasu as name, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.nazev_moznosti) AS shortName, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.kurz_moznosti) AS rate, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.id_moznosti) as opportunityId FROM fortuna_nabidka_kategorie, fortuna_nabidka_turnaje, fortuna_nabidka_zapasy, fortuna_nabidka_sazky_moznosti WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.")
+                AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie
+                AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje
+                AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+                AND fortuna_nabidka_zapasy.id_zapasu = ".$prilezitost["matchId"]."
+                AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_sazky
+                AND (nazev_moznosti ='1' OR nazev_moznosti ='10' OR nazev_moznosti ='0' OR nazev_moznosti ='02' OR nazev_moznosti ='2')
+                GROUP BY matchId";
+
+            $nabidky = $this->databaze->fetch($sql);
+            
+            //echo var_dump($nabidky)."<br /><br />";
+            //echo $nabidky["shortName"]."<br /><br />";
+            
+            $nalezeno = in_array($nabidky, $zapasy_na_tiketu);
+            if($nalezeno)
+            {
+                //echo "x<br />";
+                //naplnění pomocných polí duplicitními zápasama, které budou na začátku dalšího tiketu
+                array_push($pom_nabidky, $nabidky);
+                array_push($pom_kurzy, $prilezitost["rate"]);
+                array_push($pom_kurzy_pozice, $prilezitost["shortName"]);
+                array_push($pom_nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($pom_nabidky_moznosti, explode(",", $nabidky["shortName"]));
+                array_push($pom_kurzy_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_kurzy)));
+
+                array_push($pom_nabidky_moznosti_id, explode(",", end($pom_nabidky)["opportunityId"]));
+                array_push($pom_nabidky_moznosti_id_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_moznosti_id)));
+            }
+            else
+            {
+                array_push($zapasy_na_tiketu,$nabidky);
+                //naplňování tiketu zápasama
+                array_push($this->template->nabidky, $nabidky);
+                array_push($this->template->kurzy_pozice, $prilezitost["shortName"]);
+                array_push($this->template->nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($this->template->nabidky_moznosti, explode(",", $nabidky["shortName"]));
+
+                //echo count($this->template->nabidky_moznosti)." ---- ".count($this->template->nabidky_kurzy)."<br />";
+                //echo dump($this->template->nabidky_moznosti)." ---- ".dump($this->template->nabidky_kurzy)."<br />";
+                //echo end($this->template->nabidky_moznosti)." ---- ".end($this->template->nabidky_kurzy)."<hr />";
+                array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                
+                array_push($nabidky_moznosti_id, explode(",", end($this->template->nabidky)["opportunityId"]));
+                array_push($this->template->nabidky_moznosti_id_pole, array_combine(end($this->template->nabidky_moznosti), end($nabidky_moznosti_id)));
+
+                $this->template->i++;
+                array_push($this->template->id_tiketu,$id_tiketu);
+                $kurz_tiketu = $kurz_tiketu * $prilezitost["rate"];
+                
+                if($kurz_tiketu > $kurz + 0.5)
+                {
+                    $kurz_tiketu = $kurz_tiketu / $prilezitost["rate"];
+                    $this->template->tiket[$this->template->i - 2] = 1;
+                    $this->template->kurz_tiketu[$this->template->i - 2] = $kurz_tiketu;
+                    $kurz_tiketu = $prilezitost["rate"];
+                    $zapasy_na_tiketu = array();
+                       
+
+                    for($i=0;$i<count($pom_nabidky);$i++)
+                    {
+                        if($kurz_tiketu * $pom_kurzy[$i] < $kurz + 0.5)
+                        {
+                            $pom_nabidka = array_shift($pom_nabidky);
+                            array_push($zapasy_na_tiketu, $pom_nabidka);
+                            array_push($this->template->nabidky, $pom_nabidka);
+                            array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+                            array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                            array_shift($pom_nabidky_kurzy);
+                            array_shift($pom_nabidky_moznosti);
+                            array_push($this->template->nabidky_moznosti_id_pole,array_shift($pom_nabidky_moznosti_id_pole));
+
+
+
+                            $this->template->i++;
+                            array_push($this->template->id_tiketu,$id_tiketu);
+                            $kurz_tiketu = $kurz_tiketu * array_shift($pom_kurzy);
+                        }
+                    }
+                    $id_tiketu++;
+                }
+            }
+        }
+        }
+        $this->template->tiket[$this->template->i-1] = 1;
+        $this->template->kurz_tiketu[$this->template->i-1] = $kurz_tiketu;
+        //echo var_dump($this->template->kurz_tiketu)."<br /><br />";
+        
+        $this->template->mensiMoznost = array();
+        $this->template->vetsiMoznost = array();
+        //$this->template->id_tiketu = "";
+    }
+
+    //GeneratorPodleZapasuPresenter.php
+    public function selectFormSucceeded2(UI\Form $form, $values)
+    {
+        $zapasy = $form["vybrane_zapasy"]->getRawValue(); //zvoleé soutěže
+        $kurz = $values["kurz"]; //zvolený kurz
+        $sazkovka = $values["sazkovka"];
+        //dump($zapasy);
+
+        $souteze = array();
+        for($i=0;$i<count($zapasy);$i++)
+        {
+            $souteze[$i] = $this->databaze->fetch("SELECT tipsport_zakladni_nabidka_souteze.id FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy WHERE tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_zapasy.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId=".$zapasy[$i]);
+            $souteze[$i] = $souteze[$i]["id"];
+        }
+        //$souteze = array_unique($souteze);
+        //dump($souteze);
+
+        $podminka = "";
+        $podminka_bez_zapasu = "";
+        $podminka_vybrane = "";
+        $podminka_fortuna = "";
+        for($i=0;$i<count($souteze);$i++)
+        {
+          $podminka = $podminka."tipsport_zakladni_nabidka_zapasy.id_souteze=".$souteze[$i]." OR ";
+          $podminka_bez_zapasu = $podminka_bez_zapasu."tipsport_zakladni_nabidka_zapasy.matchId !=".$zapasy[$i]." AND ";
+          $podminka_vybrane = $podminka_vybrane."tipsport_zakladni_nabidka_zapasy.matchId=".$zapasy[$i]." OR ";
+
+          $podminka_fortuna = $podminka_fortuna."tipsport_zakladni_nabidka_souteze.id=".$souteze[$i]." OR ";
+        }
+        $podminka = substr($podminka, 0, strlen($podminka)-4); //vytvoří se podmínka ze soutěží pro výběr z databáze
+        $podminka_bez_zapasu = substr($podminka_bez_zapasu, 0, strlen($podminka_bez_zapasu)-4);
+        $podminka_vybrane = substr($podminka_vybrane, 0, strlen($podminka_vybrane)-4);
+
+        $podminka_fortuna = substr($podminka_fortuna, 0, strlen($podminka_fortuna)-4);
+        /*
+        $sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+        $data = $this->databaze->query($sql);
+        */
+
+        $this->template->nabidky = array();
+        $this->template->kurzy_pozice = array(); 
+        $this->template->nabidky_kurzy = array();
+        $this->template->nabidky_moznosti = array();
+        $this->template->kurzy_pole = array();
+        
+        $this->template->nabidky_moznosti_id_pole = array();
+        $nabidky_moznosti_id = array();
+        $pom_nabidky_moznosti_id_pole = array();
+        $pom_nabidky_moznosti_id = array();
+        
+        //vytvořím si pomocné pole, do kterých si dám  duplicity z tiketu, které budou na druhém tiketu...
+        $pom_nabidky = array();
+        $pom_kurzy = array();
+        $pom_kurzy_pozice = array(); 
+        $pom_nabidky_kurzy = array();
+        $pom_nabidky_moznosti = array();
+        $pom_kurzy_pole = array();
+
+        $this->template->i = 0;
+        $this->template->id_tiketu = array(); //id jednotlivých vygenerovaných tiketů
+        $id_tiketu = 1;
+        $this->template->kurz_tiketu = array(); //kurzy pro jednotlivé vygenerované tikety
+        $kurz_tiketu = 1; //průběžný kurz tiketu
+        $this->template->tiket = array(); //určuje, kde končí každý jednotlivý tiket... tam, kde je zapsána 1, je pozice konce tiketu
+        $nalezeno = false; //určuje, jestli je daný zápas na tiketu
+        $zapasy_na_tiketu = array();
+        $doplneni_tiketu = 0;
+        $zacatek_tiketu = array();
+        $zacatek_tiketu_prilezitost = array();
+
+        if($sazkovka == "tipsport")
+        {
+        $sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId, shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka_vybrane.") AND (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate < ".$kurz." AND rate = (SELECT MIN(rate) FROM tipsport_zakladni_nabidka_moznosti as tip WHERE tip.matchId = tipsport_zakladni_nabidka_moznosti.matchId) ORDER BY rate"; //AND rate <= ".$kurz." ORDER BY rate";
+
+        $data = $this->databaze->query($sql);
+        
+        foreach($data as $prilezitost)
+        {
+            $sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.id as id_souteze, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitost["matchId"]." GROUP BY matchId";
+            array_push($zacatek_tiketu, $this->databaze->fetch($sql)); 
+            array_push($zacatek_tiketu_prilezitost, $prilezitost);       
+        }
+        //$zacatek_tiketu = array_unique($zacatek_tiketu);
+        //echo "velikost je ".count($zacatek_tiketu);
+
+        $sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka_bez_zapasu.") AND (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+        $data = $this->databaze->query($sql);
+        foreach($data as $prilezitost) //projíždím zápasy odpovídající zvolenému nastavení  
+        {
+            $sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.id as id_souteze, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitost["matchId"]." GROUP BY matchId";
+            //echo $sql."<br /><br />";
+
+            $nabidky = $this->databaze->fetch($sql);
+            
+            //echo var_dump($nabidky)."<br /><br />";
+            //echo $nabidky["shortName"]."<br /><br />";
+            
+            if($doplneni_tiketu < $id_tiketu)
+            {
+
+                for($i=0;$i<count($zacatek_tiketu);$i++)
+                {
+                    array_push($zapasy_na_tiketu, $zacatek_tiketu[$i]);
+                    //naplňování tiketu zápasama
+                    array_push($this->template->nabidky, $zacatek_tiketu[$i]);
+                    array_push($this->template->kurzy_pozice, $zacatek_tiketu_prilezitost[$i]["shortName"]);
+                    array_push($this->template->nabidky_kurzy, explode(",", $zacatek_tiketu[$i]["rate"]));
+                    array_push($this->template->nabidky_moznosti, explode(",", $zacatek_tiketu[$i]["shortName"]));
+                    array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                    
+                    array_push($nabidky_moznosti_id, explode(",", end($this->template->nabidky)["opportunityId"]));
+                    array_push($this->template->nabidky_moznosti_id_pole, array_combine(end($this->template->nabidky_moznosti), end($nabidky_moznosti_id)));
+
+                    $this->template->i++;
+                    array_push($this->template->id_tiketu,$id_tiketu);
+                    $kurz_tiketu = $kurz_tiketu * $zacatek_tiketu_prilezitost[$i]["rate"];
+                }
+                $doplneni_tiketu++;
+            }
+
+            $nalezeno = in_array($nabidky, $zapasy_na_tiketu);
+            if($nalezeno)
+            {
+                //echo "x<br />";
+                //naplnění pomocných polí duplicitními zápasama, které budou na začátku dalšího tiketu
+                array_push($pom_nabidky, $nabidky);
+                array_push($pom_kurzy, $prilezitost["rate"]);
+                array_push($pom_kurzy_pozice, $prilezitost["shortName"]);
+                array_push($pom_nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($pom_nabidky_moznosti, explode(",", $nabidky["shortName"]));
+                array_push($pom_kurzy_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_kurzy)));
+
+                array_push($pom_nabidky_moznosti_id, explode(",", end($pom_nabidky)["opportunityId"]));
+                array_push($pom_nabidky_moznosti_id_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_moznosti_id)));
+            }
+            else
+            {
+                array_push($zapasy_na_tiketu,$nabidky);
+                //naplňování tiketu zápasama
+                array_push($this->template->nabidky, $nabidky);
+                array_push($this->template->kurzy_pozice, $prilezitost["shortName"]);
+                array_push($this->template->nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($this->template->nabidky_moznosti, explode(",", $nabidky["shortName"]));
+                array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                
+                array_push($nabidky_moznosti_id, explode(",", end($this->template->nabidky)["opportunityId"]));
+                array_push($this->template->nabidky_moznosti_id_pole, array_combine(end($this->template->nabidky_moznosti), end($nabidky_moznosti_id)));
+
+                $this->template->i++;
+                array_push($this->template->id_tiketu,$id_tiketu);
+                $kurz_tiketu = $kurz_tiketu * $prilezitost["rate"];
+                
+                if($kurz_tiketu > $kurz + 0.5)
+                {
+                    $kurz_tiketu = $kurz_tiketu / $prilezitost["rate"];
+                    $this->template->tiket[$this->template->i - 2] = 1;
+                    $this->template->kurz_tiketu[$this->template->i - 2] = $kurz_tiketu;
+                    $kurz_tiketu = $prilezitost["rate"];
+                    $zapasy_na_tiketu = array();
+                       
+
+                    for($i=0;$i<count($pom_nabidky);$i++)
+                    {
+                        if($kurz_tiketu * $pom_kurzy[$i] < $kurz + 0.5)
+                        {
+                            $pom_nabidka = array_shift($pom_nabidky);
+                            array_push($zapasy_na_tiketu, $pom_nabidka);
+                            array_push($this->template->nabidky, $pom_nabidka);
+                            array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+                            array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                            array_shift($pom_nabidky_kurzy);
+                            array_shift($pom_nabidky_moznosti);
+                            array_push($this->template->nabidky_moznosti_id_pole,array_shift($pom_nabidky_moznosti_id_pole));
+
+
+
+                            $this->template->i++;
+                            array_push($this->template->id_tiketu,$id_tiketu);
+                            $kurz_tiketu = $kurz_tiketu * array_shift($pom_kurzy);
+                        }
+                    }
+                    $id_tiketu++;
+
+                    /*$pom_nabidky = array();
+                    $pom_kurzy = array(); 
+                    $pom_kurzy_pozice = array(); 
+                    $pom_nabidky_kurzy = array();
+                    $pom_nabidky_moznosti = array();
+                    $pom_kurzy_pole = array();*/
+                }
+            }
+        }
+        }
+        else if($sazkovka == "fortuna")
+        {
+        $data = $this->databaze->query("SELECT sport, competitionName FROM tipsport_zakladni_nabidka_souteze WHERE ".$podminka_fortuna);
+        $sql_fortuna_podminka_souteze = "";
+        $sql_fortuna_podminka_sporty = "";
+        foreach ($data as $souteze) 
+        {
+            //echo $souteze["competitionName"]."<br />";
+            $nazev_souzeze = substr($souteze["competitionName"],0,6);
+            //echo $nazev_souzeze."<br />";
+            if(is_numeric(substr($nazev_souzeze, 0,1)))
+            {
+                $nazev_souzeze = str_replace(" ", "", $nazev_souzeze);
+            }
+            //echo $nazev_souzeze."<br />";
+
+            //$sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".substr($souteze["competitionName"],0,5)."%' OR ";
+            $sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".$nazev_souzeze."%' OR ";
+            //echo explode("-",$souteze["sport"])[0]."<br />";
+            $nazev_kategorie = explode(" - ",$souteze["sport"])[0];
+            if($nazev_kategorie == "Lední hokej")
+            {
+                $nazev_kategorie = "Hokej";
+            }
+            //echo $nazev_kategorie."<hr />";
+            $sql_fortuna_podminka_sporty = $sql_fortuna_podminka_sporty."fortuna_nabidka_kategorie.nazev_kategorie LIKE '%".$nazev_kategorie."%' OR ";
+        }
+        $sql_fortuna_podminka_souteze = substr($sql_fortuna_podminka_souteze, 0, strlen($sql_fortuna_podminka_souteze)-4);
+        $sql_fortuna_podminka_sporty = substr($sql_fortuna_podminka_sporty, 0, strlen($sql_fortuna_podminka_sporty)-4);
+
+        $data = $this->databaze->query("SELECT name FROM tipsport_zakladni_nabidka_zapasy WHERE ".$podminka_vybrane);
+        $sql_fortuna_podminka_zapasy = "";
+        foreach($data as $zapasy)
+        {
+            //echo $zapasy["name"];
+            $sql_fortuna_podminka_zapasy = $sql_fortuna_podminka_zapasy."fortuna_nabidka_zapasy.nazev_zapasu LIKE '%".$zapasy["name"]."%' OR ";
+        }
+        $sql_fortuna_podminka_zapasy = substr($sql_fortuna_podminka_zapasy, 0, strlen($sql_fortuna_podminka_zapasy)-4);
+
+        $sql = "SELECT fortuna_nabidka_zapasy.id_zapasu as matchId, fortuna_nabidka_sazky_moznosti.nazev_moznosti as shortName, fortuna_nabidka_sazky_moznosti.kurz_moznosti as rate, fortuna_nabidka_zapasy.nazev_zapasu as name FROM fortuna_nabidka_zapasy, fortuna_nabidka_sazky_moznosti, fortuna_nabidka_turnaje, fortuna_nabidka_kategorie WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.") AND (".$sql_fortuna_podminka_zapasy.")
+            AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie
+            AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje
+            AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+            AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_sazky
+            AND (nazev_moznosti ='1' OR nazev_moznosti ='10' OR nazev_moznosti ='0' OR nazev_moznosti ='02' OR nazev_moznosti ='2')
+            AND kurz_moznosti <= ".$kurz." 
+            AND kurz_moznosti = (SELECT kurz_moznosti FROM fortuna_nabidka_sazky_moznosti as tip WHERE tip.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+                                AND tip.id_sazky = fortuna_nabidka_sazky_moznosti.id_zapasu AND tip.nazev_moznosti != '12' ORDER BY kurz_moznosti LIMIT 1) 
+            ORDER BY kurz_moznosti";
+        //echo $sql."<hr />";
+        $data = $this->databaze->query($sql);
+        foreach($data as $prilezitost) 
+        {
+            $sql = "SELECT fortuna_nabidka_kategorie.nazev_kategorie as sport, fortuna_nabidka_turnaje.nazev_turnaje as competitionName, fortuna_nabidka_turnaje.id_turnaje as id_souteze, fortuna_nabidka_zapasy.id_zapasu as matchId, fortuna_nabidka_zapasy.nazev_zapasu as name, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.nazev_moznosti) AS shortName, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.kurz_moznosti) AS rate, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.id_moznosti) as opportunityId FROM fortuna_nabidka_kategorie, fortuna_nabidka_turnaje, fortuna_nabidka_zapasy, fortuna_nabidka_sazky_moznosti WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.") AND (".$sql_fortuna_podminka_zapasy.")
+                AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie
+                AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje
+                AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+                AND fortuna_nabidka_zapasy.id_zapasu = ".$prilezitost["matchId"]."
+                AND (nazev_moznosti ='1' OR nazev_moznosti ='10' OR nazev_moznosti ='0' OR nazev_moznosti ='02' OR nazev_moznosti ='2')
+                GROUP BY matchId";
+            //echo "--- ".$sql."<hr />";
+            array_push($zacatek_tiketu, $this->databaze->fetch($sql)); 
+            array_push($zacatek_tiketu_prilezitost, $prilezitost);  
+        }
+
+        //$sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+
+        $sql = "SELECT fortuna_nabidka_zapasy.id_zapasu as matchId, fortuna_nabidka_sazky_moznosti.nazev_moznosti as shortName, fortuna_nabidka_sazky_moznosti.kurz_moznosti as rate, fortuna_nabidka_zapasy.nazev_zapasu as name FROM fortuna_nabidka_zapasy, fortuna_nabidka_sazky_moznosti, fortuna_nabidka_turnaje, fortuna_nabidka_kategorie WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.")
+            AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie
+            AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje
+            AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+            AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_sazky
+            AND (nazev_moznosti ='1' OR nazev_moznosti ='10' OR nazev_moznosti ='0' OR nazev_moznosti ='02' OR nazev_moznosti ='2')
+            AND kurz_moznosti <= ".$kurz." ORDER BY kurz_moznosti";
+        //echo $sql;
+        
+        $data = $this->databaze->query($sql);
+        foreach($data as $prilezitost) //projíždím zápasy odpovídající zvolenému nastavení  
+        {
+            //$sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.id as id_souteze, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitost["matchId"]." GROUP BY matchId";
+            //echo $sql."<br /><br />";
+
+            $sql = "SELECT fortuna_nabidka_kategorie.nazev_kategorie as sport, fortuna_nabidka_turnaje.nazev_turnaje as competitionName, fortuna_nabidka_turnaje.id_turnaje as id_souteze, fortuna_nabidka_zapasy.id_zapasu as matchId, fortuna_nabidka_zapasy.nazev_zapasu as name, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.nazev_moznosti) AS shortName, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.kurz_moznosti) AS rate, GROUP_CONCAT(fortuna_nabidka_sazky_moznosti.id_moznosti) as opportunityId FROM fortuna_nabidka_kategorie, fortuna_nabidka_turnaje, fortuna_nabidka_zapasy, fortuna_nabidka_sazky_moznosti WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.")
+                AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie
+                AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje
+                AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+                AND fortuna_nabidka_zapasy.id_zapasu = ".$prilezitost["matchId"]."
+                AND (nazev_moznosti ='1' OR nazev_moznosti ='10' OR nazev_moznosti ='0' OR nazev_moznosti ='02' OR nazev_moznosti ='2')
+                GROUP BY matchId";
+
+            $nabidky = $this->databaze->fetch($sql);
+
+            if($doplneni_tiketu < $id_tiketu)
+            {
+
+                for($i=0;$i<count($zacatek_tiketu);$i++)
+                {
+                    array_push($zapasy_na_tiketu,$zacatek_tiketu[$i]);
+                    //naplňování tiketu zápasama
+                    array_push($this->template->nabidky, $zacatek_tiketu[$i]);
+                    array_push($this->template->kurzy_pozice, $zacatek_tiketu_prilezitost[$i]["shortName"]);
+                    array_push($this->template->nabidky_kurzy, explode(",", $zacatek_tiketu[$i]["rate"]));
+                    array_push($this->template->nabidky_moznosti, explode(",", $zacatek_tiketu[$i]["shortName"]));
+                    array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                    
+                    array_push($nabidky_moznosti_id, explode(",", end($this->template->nabidky)["opportunityId"]));
+                    array_push($this->template->nabidky_moznosti_id_pole, array_combine(end($this->template->nabidky_moznosti), end($nabidky_moznosti_id)));
+
+                    $this->template->i++;
+                    array_push($this->template->id_tiketu,$id_tiketu);
+                    $kurz_tiketu = $kurz_tiketu * $zacatek_tiketu_prilezitost[$i]["rate"];
+                }
+                $doplneni_tiketu++;
+            }
+            
+            $nalezeno = in_array($nabidky, $zapasy_na_tiketu);
+            if($nalezeno)
+            {
+                //echo "x<br />";
+                //naplnění pomocných polí duplicitními zápasama, které budou na začátku dalšího tiketu
+                array_push($pom_nabidky, $nabidky);
+                array_push($pom_kurzy, $prilezitost["rate"]);
+                array_push($pom_kurzy_pozice, $prilezitost["shortName"]);
+                array_push($pom_nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($pom_nabidky_moznosti, explode(",", $nabidky["shortName"]));
+                array_push($pom_kurzy_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_kurzy)));
+
+                array_push($pom_nabidky_moznosti_id, explode(",", end($pom_nabidky)["opportunityId"]));
+                array_push($pom_nabidky_moznosti_id_pole, array_combine(end($pom_nabidky_moznosti), end($pom_nabidky_moznosti_id)));
+            }
+            else
+            {
+                array_push($zapasy_na_tiketu,$nabidky);
+                //naplňování tiketu zápasama
+                array_push($this->template->nabidky, $nabidky);
+                array_push($this->template->kurzy_pozice, $prilezitost["shortName"]);
+                array_push($this->template->nabidky_kurzy, explode(",", $nabidky["rate"]));
+                array_push($this->template->nabidky_moznosti, explode(",", $nabidky["shortName"]));
+
+                //echo count($this->template->nabidky_moznosti)." ---- ".count($this->template->nabidky_kurzy)."<br />";
+                //echo dump($this->template->nabidky_moznosti)." ---- ".dump($this->template->nabidky_kurzy)."<br />";
+                //echo end($this->template->nabidky_moznosti)." ---- ".end($this->template->nabidky_kurzy)."<hr />";
+                array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+                
+                array_push($nabidky_moznosti_id, explode(",", end($this->template->nabidky)["opportunityId"]));
+                array_push($this->template->nabidky_moznosti_id_pole, array_combine(end($this->template->nabidky_moznosti), end($nabidky_moznosti_id)));
+
+                $this->template->i++;
+                array_push($this->template->id_tiketu,$id_tiketu);
+                $kurz_tiketu = $kurz_tiketu * $prilezitost["rate"];
+                
+                if($kurz_tiketu > $kurz + 0.5)
+                {
+                    $kurz_tiketu = $kurz_tiketu / $prilezitost["rate"];
+                    $this->template->tiket[$this->template->i - 2] = 1;
+                    $this->template->kurz_tiketu[$this->template->i - 2] = $kurz_tiketu;
+                    $kurz_tiketu = $prilezitost["rate"];
+                    $zapasy_na_tiketu = array();
+                       
+
+                    for($i=0;$i<count($pom_nabidky);$i++)
+                    {
+                        if($kurz_tiketu * $pom_kurzy[$i] < $kurz + 0.5)
+                        {
+                            $pom_nabidka = array_shift($pom_nabidky);
+                            array_push($zapasy_na_tiketu, $pom_nabidka);
+                            array_push($this->template->nabidky, $pom_nabidka);
+                            array_push($this->template->kurzy_pozice, array_shift($pom_kurzy_pozice));
+                            array_push($this->template->kurzy_pole, array_shift($pom_kurzy_pole));
+                            array_shift($pom_nabidky_kurzy);
+                            array_shift($pom_nabidky_moznosti);
+                            array_push($this->template->nabidky_moznosti_id_pole,array_shift($pom_nabidky_moznosti_id_pole));
+
+
+
+                            $this->template->i++;
+                            array_push($this->template->id_tiketu,$id_tiketu);
+                            $kurz_tiketu = $kurz_tiketu * array_shift($pom_kurzy);
+                        }
+                    }
+                    $id_tiketu++;
+                }
+            }
+        }
+        }
+        $this->template->tiket[$this->template->i-1] = 1;
+        $this->template->kurz_tiketu[$this->template->i-1] = $kurz_tiketu;
+        //echo var_dump($this->template->kurz_tiketu)."<br /><br />";
+        
+        $this->template->mensiMoznost = array();
+        $this->template->vetsiMoznost = array();
+        //$this->template->id_tiketu = "";
+    }
+
+    //NejvetsiKurzyPresenter.php    
+    protected function createComponentSelectForm2()
+    {
+        $form = new UI\Form;
+
+        $moznosti = $this->databaze->query("SELECT id, sport, competitionName FROM tipsport_zakladni_nabidka_souteze");
+        //$this->moznosti = $moznosti;
+        $moznostiPole = array();
+
+        //$option = array();
+
+        foreach ($moznosti as $moznost) 
+        {
+            $moznostiPole[$moznost->id] = Html::el('options',  $moznost->competitionName . " - ".  $moznost->sport)->onClick("vyber_souteze(".$moznost->id.",'".$moznost->competitionName."','".$moznost->sport."');");
+
+        }
+
+        $this->template->souteze = array();
+        $this->template->souteze = $moznostiPole;
+
+        $form->addMultiSelect("souteze","", $moznostiPole)->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);");
+        
+        $form->addMultiSelect("vybrane_souteze")
+            ->setAttribute("id", "vybrane_souteze")
+            ->setAttribute("onBlur", "oznacit_vsechny(this);")
+            ->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);");
+
+        $form->addText("pocet", "Pocet:")
+            ->setDefaultValue("Počet zápasů...")
+            ->setAttribute("onClick", "smazat_text_input(this);")
+            ->setAttribute("onBlur", "vlozit_default(this);")
+            ->setAttribute("style", "position:relative;top:25%;height:50%");
+
+        $sazkovky = ["vse" => "Všechny", "tipsport" => "Tipsport", "fortuna" => "Fortuna"];
+        $form->addRadioList("sazkovka","Sázková kancelář",$sazkovky);
+
+        $form->addSubmit("zobrazit", "Zobrazit kurzy")
+            ->setAttribute("class", "button")
+            ->setAttribute("style", "position:relative;top:25%;height:50%");
+
+        $form->onSuccess[] = [$this, "selectFormSucceeded"];
+
+
+        $renderer = $form->getRenderer();
+        //$renderer->wrappers['moznosti']['size'] = 20;
+
+        //echo var_dump($form->getRawValue());
+
+        return $form;
+    }
+
+
+    //NejvetsiKurzyPresenter.php
+    public function selectFormSucceeded2(UI\Form $form, $values)
+    {
+        $souteze = $form["vybrane_souteze"]->getRawValue();
+        $pocet = $values["pocet"];
+        $sazkovka = $values["sazkovka"];
+        $podminka = "";
+        $podminka2 = "";
+        for($i=0;$i<count($souteze);$i++)
+        {
+          $podminka = $podminka."tipsport_zakladni_nabidka_zapasy.id_souteze=".$souteze[$i]." OR ";
+          $podminka2 = $podminka2."tipsport_zakladni_nabidka_souteze.id=".$souteze[$i]." OR ";
+        }
+        $podminka = substr($podminka, 0, strlen($podminka)-4);
+        $podminka2 = substr($podminka2, 0, strlen($podminka2)-4);
+
+        $sql_fortuna = "";
+        if($sazkovka == "vse" || $sazkovka == "fortuna")
+        {
+            $data = $this->databaze->query("SELECT sport, competitionName FROM tipsport_zakladni_nabidka_souteze WHERE ".$podminka2);
+            $sql_fortuna_podminka_souteze = "";
+            $sql_fortuna_podminka_sporty = "";
+            foreach ($data as $souteze) 
+            {
+                //echo $souteze["competitionName"]."<br />";
+                $nazev_souzeze = substr($souteze["competitionName"],0,6);
+                //echo $nazev_souzeze."<br />";
+                if(is_numeric(substr($nazev_souzeze, 0,1)))
+                {
+                    $nazev_souzeze = str_replace(" ", "", $nazev_souzeze);
+                }
+                //echo $nazev_souzeze."<br />";
+
+                //$sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".substr($souteze["competitionName"],0,5)."%' OR ";
+                $sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".$nazev_souzeze."%' OR ";
+                //echo explode("-",$souteze["sport"])[0]."<br />";
+                $nazev_kategorie = explode(" - ",$souteze["sport"])[0];
+                if($nazev_kategorie == "Lední hokej")
+                {
+                    $nazev_kategorie = "Hokej";
+                }
+                //echo $nazev_kategorie."<hr />";
+                $sql_fortuna_podminka_sporty = $sql_fortuna_podminka_sporty."fortuna_nabidka_kategorie.nazev_kategorie LIKE '%".$nazev_kategorie."%' OR ";
+            }
+            $sql_fortuna_podminka_souteze = substr($sql_fortuna_podminka_souteze, 0, strlen($sql_fortuna_podminka_souteze)-4);
+            $sql_fortuna_podminka_sporty = substr($sql_fortuna_podminka_sporty, 0, strlen($sql_fortuna_podminka_sporty)-4);
+            $sql_fortuna = "SELECT MAX(kurz_moznosti) as nej_kurz, nazev_zapasu as name, nazev_kategorie as sport, nazev_turnaje as competitionName, odkaz as nabidka_url, fortuna_nabidka_zapasy.id_zapasu as matchId, GROUP_CONCAT(nazev_moznosti) as shortName, nazev_moznosti as nejmensi_pozice, GROUP_CONCAT(kurz_moznosti) as rate, GROUP_CONCAT(id_moznosti) as opportunityId FROM fortuna_nabidka_kategorie, fortuna_nabidka_sazky, fortuna_nabidka_sazky_moznosti, fortuna_nabidka_turnaje, fortuna_nabidka_zapasy WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.") 
+                AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie 
+                AND fortuna_nabidka_turnaje.id_kategorie = fortuna_nabidka_zapasy.id_kategorie
+                AND fortuna_nabidka_zapasy.id_kategorie = fortuna_nabidka_sazky.id_kategorie
+                AND fortuna_nabidka_sazky.id_kategorie = fortuna_nabidka_sazky_moznosti.id_kategorie
+                AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje 
+                AND fortuna_nabidka_zapasy.id_turnaje = fortuna_nabidka_sazky.id_turnaje
+                AND fortuna_nabidka_sazky.id_turnaje = fortuna_nabidka_sazky_moznosti.id_turnaje
+                AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky.id_zapasu 
+                AND fortuna_nabidka_sazky.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+                AND fortuna_nabidka_sazky.id_sazky = fortuna_nabidka_sazky_moznosti.id_sazky
+                AND nazev_sazky = 'zápas'
+                AND nazev_moznosti !='12'
+                GROUP BY matchId ORDER BY nej_kurz DESC LIMIT ".$pocet."";
+        }
+
+
+
+        /*$sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND rate <= ".$kurz." ORDER BY rate";
+        $sql = "SELECT  WHERE ";*/
+
+        /*$sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId 
+                FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti 
+                WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze 
+                GROUP BY matchId 
+                ORDER BY rate ASC
+                LIMIT ".$pocet."";*/
+
+
+        /*$sql = "SELECT tipsport_zakladni_nabidka_zapasy.matchId as matchId, tipsport_zakladni_nabidka_moznosti.shortName as shortName, rate, name 
+                FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti 
+                WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze
+                ORDER BY rate DESC
+                LIMIT ".$pocet."";*/
+        //echo $sql;
+
+        /*$sql_tipsport = "";
+        if($sazkovka == "vse" || $sazkovka == "tipsport")
+        {
+            $sql_tipsport = "SELECT MAX(rate) as nej_kurz, name, sport, competitionName, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, tipsport_zakladni_nabidka_moznosti.shortName as nejmensi_pozice, GROUP_CONCAT(rate) AS rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId 
+                FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti 
+                WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze
+                GROUP BY matchId
+                ORDER BY nej_kurz DESC
+                LIMIT ".$pocet."";
+        }
+        $sql = "";
+        if($sazkovka == "vse")
+        {
+            $sql = "(".$sql_fortuna.") UNION (".$sql_tipsport.") ORDER BY nej_kurz DESC";
+        }
+        else if($sazkovka == "tipsport")
+        {
+            $sql = $sql_tipsport;
+        }
+        else if($sazkovka == "fortuna")
+        {
+            $sql = $sql_fortuna;
+        }
+        //echo $sql;
+        $data = $this->databaze->query($sql);
+
+        $this->template->nabidky = array();
+        $this->template->kurzy_pozice = array();
+        $this->template->nabidky_kurzy = array();
+        $this->template->nabidky_moznosti = array();
+        $this->template->i = 0;
+        $this->template->kurzy_pole = array();
+        $this->template->nabidky_moznosti_id = array();
+        $this->template->nabidky_moznosti_id_pole = array();
+        $this->template->id_tiketu = array();
+        $this->template->sazkovka = array();
+
+        foreach($data as $prilezitosti)
+        {
+
+            /*$sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId 
+                    FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti 
+                    WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitosti["matchId"]."
+                    GROUP BY matchId";
+            $nabidky = $this->databaze->fetch($sql);*/
+
+            //echo var_dump($prilezitosti)."<br /><br />";
+            //echo var_dump($nabidky)."<br /><br />";
+            //echo $nabidky["sport"]."<br /><br />";
+
+            /*if(strpos($prilezitosti["nabidka_url"],"tipsport") != false)
+            {
+                array_push($this->template->sazkovka, "Tipsport");
+            }
+            else
+            {
+                array_push($this->template->sazkovka, "Fortuna");   
+            }
+
+            array_push($this->template->nabidky, $prilezitosti);
+
+            array_push($this->template->kurzy_pozice, $prilezitosti["nejmensi_pozice"]);
+            //array_push($this->template->nabidky_kurzy, explode(",", end($this->template->nabidky)["rate"]));
+            array_push($this->template->nabidky_kurzy, explode(",", $prilezitosti["rate"]));
+            //array_push($this->template->nabidky_moznosti, explode(",", end($this->template->nabidky)["shortName"]));
+            array_push($this->template->nabidky_moznosti, explode(",", $prilezitosti["shortName"]));
+            array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+            
+            array_push($this->template->id_tiketu, 1);
+
+            $this->template->i++;
+
+        }
+    }
+
+    //NejmensiKurzyPresenter.php
+    protected function createComponentSelectForm2()
+    {
+        $form = new UI\Form;
+
+        $moznosti = $this->databaze->query("SELECT id, sport, competitionName FROM tipsport_zakladni_nabidka_souteze");
+        //$this->moznosti = $moznosti;
+        $moznostiPole = array();
+
+        //$option = array();
+
+        foreach ($moznosti as $moznost) 
+        {
+            $moznostiPole[$moznost->id] = Html::el('options',  $moznost->competitionName . " - ".  $moznost->sport)->onClick("vyber_souteze(".$moznost->id.",'".$moznost->competitionName."','".$moznost->sport."');");
+
+        }
+
+        $this->template->souteze = array();
+        $this->template->souteze = $moznostiPole;
+
+        $form->addMultiSelect("souteze","", $moznostiPole)->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);");
+        
+        $form->addMultiSelect("vybrane_souteze")
+            ->setAttribute("id", "vybrane_souteze")
+            ->setAttribute("onBlur", "oznacit_vsechny(this);")
+            ->setAttribute("style", "position:relative;top: 50%;transform: translateY(-50%);");
+
+        $form->addText("pocet", "Pocet:")
+            ->setDefaultValue("Počet zápasů...")
+            ->setAttribute("onClick", "smazat_text_input(this);")
+            ->setAttribute("onBlur", "vlozit_default(this);")
+            ->setAttribute("style", "position:relative;top:25%;height:50%");
+
+        $sazkovky = ["vse" => "Všechny", "tipsport" => "Tipsport", "fortuna" => "Fortuna"];
+        $form->addRadioList("sazkovka","Sázková kancelář",$sazkovky);//->getSeparatorPrototype()->setName(NULL);
+
+        $form->addSubmit("zobrazit", "Zobrazit kurzy")
+            ->setAttribute("class", "button")
+            ->setAttribute("style", "position:relative;top:25%;height:50%");
+
+        $form->onSuccess[] = [$this, "selectFormSucceeded"];
+
+
+        $renderer = $form->getRenderer();
+        //$renderer->wrappers['moznosti']['size'] = 20;
+
+        //echo var_dump($form->getRawValue());
+
+        return $form;
+    }   
+
+    //NejmensiKurzyPresenter.php
+    public function selectFormSucceeded(UI\Form $form, $values)
+    {
+        $souteze = $form["vybrane_souteze"]->getRawValue();
+        $pocet = $values["pocet"];
+        $sazkovka = $values["sazkovka"];
+        $podminka = "";
+        $podminka2 = "";
+        for($i=0;$i<count($souteze);$i++)
+        {
+          $podminka = $podminka."tipsport_zakladni_nabidka_zapasy.id_souteze=".$souteze[$i]." OR ";
+          $podminka2 = $podminka2."tipsport_zakladni_nabidka_souteze.id=".$souteze[$i]." OR ";
+        }
+        $podminka = substr($podminka, 0, strlen($podminka)-4);
+        $podminka2 = substr($podminka2, 0, strlen($podminka2)-4);
+
+        $sql_fortuna = "";
+        if($sazkovka == "vse" || $sazkovka == "fortuna")
+        {
+            $data = $this->databaze->query("SELECT sport, competitionName FROM tipsport_zakladni_nabidka_souteze WHERE ".$podminka2);
+            $sql_fortuna_podminka_souteze = "";
+            $sql_fortuna_podminka_sporty = "";
+            foreach ($data as $souteze) 
+            {
+                //echo $souteze["competitionName"]."<br />";
+                $nazev_souzeze = substr($souteze["competitionName"],0,6);
+                //echo $nazev_souzeze."<br />";
+                if(is_numeric(substr($nazev_souzeze, 0,1)))
+                {
+                    $nazev_souzeze = str_replace(" ", "", $nazev_souzeze);
+                }
+                //echo $nazev_souzeze."<br />";
+
+                //$sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".substr($souteze["competitionName"],0,5)."%' OR ";
+                $sql_fortuna_podminka_souteze = $sql_fortuna_podminka_souteze."fortuna_nabidka_turnaje.nazev_turnaje LIKE '%".$nazev_souzeze."%' OR ";
+                //echo explode("-",$souteze["sport"])[0]."<br />";
+                $nazev_kategorie = explode(" - ",$souteze["sport"])[0];
+                if($nazev_kategorie == "Lední hokej")
+                {
+                    $nazev_kategorie = "Hokej";
+                }
+                //echo $nazev_kategorie."<hr />";
+                $sql_fortuna_podminka_sporty = $sql_fortuna_podminka_sporty."fortuna_nabidka_kategorie.nazev_kategorie LIKE '%".$nazev_kategorie."%' OR ";
+            }
+            $sql_fortuna_podminka_souteze = substr($sql_fortuna_podminka_souteze, 0, strlen($sql_fortuna_podminka_souteze)-4);
+            $sql_fortuna_podminka_sporty = substr($sql_fortuna_podminka_sporty, 0, strlen($sql_fortuna_podminka_sporty)-4);
+            $sql_fortuna = "SELECT MIN(kurz_moznosti) as nej_kurz, nazev_zapasu as name, nazev_kategorie as sport, nazev_turnaje as competitionName, odkaz as nabidka_url, fortuna_nabidka_zapasy.id_zapasu as matchId, GROUP_CONCAT(nazev_moznosti) as shortName, nazev_moznosti as nejmensi_pozice, GROUP_CONCAT(kurz_moznosti) as rate, GROUP_CONCAT(id_moznosti) as opportunityId FROM fortuna_nabidka_kategorie, fortuna_nabidka_sazky, fortuna_nabidka_sazky_moznosti, fortuna_nabidka_turnaje, fortuna_nabidka_zapasy WHERE (".$sql_fortuna_podminka_souteze.") AND (".$sql_fortuna_podminka_sporty.") 
+                AND fortuna_nabidka_kategorie.id_kategorie = fortuna_nabidka_turnaje.id_kategorie 
+                AND fortuna_nabidka_turnaje.id_kategorie = fortuna_nabidka_zapasy.id_kategorie
+                AND fortuna_nabidka_zapasy.id_kategorie = fortuna_nabidka_sazky.id_kategorie
+                AND fortuna_nabidka_sazky.id_kategorie = fortuna_nabidka_sazky_moznosti.id_kategorie
+                AND fortuna_nabidka_turnaje.id_turnaje = fortuna_nabidka_zapasy.id_turnaje 
+                AND fortuna_nabidka_zapasy.id_turnaje = fortuna_nabidka_sazky.id_turnaje
+                AND fortuna_nabidka_sazky.id_turnaje = fortuna_nabidka_sazky_moznosti.id_turnaje
+                AND fortuna_nabidka_zapasy.id_zapasu = fortuna_nabidka_sazky.id_zapasu 
+                AND fortuna_nabidka_sazky.id_zapasu = fortuna_nabidka_sazky_moznosti.id_zapasu
+                AND fortuna_nabidka_sazky.id_sazky = fortuna_nabidka_sazky_moznosti.id_sazky
+                AND nazev_sazky = 'zápas'
+                AND nazev_moznosti !='12'
+                GROUP BY matchId ORDER BY nej_kurz ASC LIMIT ".$pocet."";
+        }
+        
+        $sql_tipsport = "";
+        if($sazkovka == "vse" || $sazkovka == "tipsport")
+        {
+            $sql_tipsport = "SELECT MIN(rate) as nej_kurz, name, sport, competitionName, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, tipsport_zakladni_nabidka_moznosti.shortName as nejmensi_pozice, GROUP_CONCAT(rate) AS rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId 
+                FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti 
+                WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze
+                GROUP BY matchId
+                ORDER BY nej_kurz ASC
+                LIMIT ".$pocet."";
+        }
+        $sql = "";
+        if($sazkovka == "vse")
+        {
+            $sql = "(".$sql_fortuna.") UNION (".$sql_tipsport.") ORDER BY nej_kurz";
+        }
+        else if($sazkovka == "tipsport")
+        {
+            $sql = $sql_tipsport;
+        }
+        else if($sazkovka == "fortuna")
+        {
+            $sql = $sql_fortuna;
+        }
+        //echo $sql;
+        $data = $this->databaze->query($sql);
+
+        $this->template->nabidky = array();
+        $this->template->kurzy_pozice = array();
+        $this->template->nabidky_kurzy = array();
+        $this->template->nabidky_moznosti = array();
+        $this->template->i = 0;
+        $this->template->kurzy_pole = array();
+        $this->template->nabidky_moznosti_id = array();
+        $this->template->nabidky_moznosti_id_pole = array();
+        $this->template->id_tiketu = array();
+        $this->template->sazkovka = array();
+
+        foreach($data as $prilezitosti)
+        {
+
+            /*$sql = "SELECT sport, competitionName, tipsport_zakladni_nabidka_souteze.url as nabidka_url, tipsport_zakladni_nabidka_zapasy.matchId as matchId, name, tipsport_zakladni_nabidka_zapasy.url as zapasy_url, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.shortName) as shortName, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.rate) as rate, GROUP_CONCAT(tipsport_zakladni_nabidka_moznosti.opportunityId) as opportunityId 
+                    FROM tipsport_zakladni_nabidka_souteze, tipsport_zakladni_nabidka_zapasy, tipsport_zakladni_nabidka_moznosti 
+                    WHERE (".$podminka.") AND tipsport_zakladni_nabidka_zapasy.matchId = tipsport_zakladni_nabidka_moznosti.matchId AND tipsport_zakladni_nabidka_souteze.id = tipsport_zakladni_nabidka_moznosti.id_souteze AND tipsport_zakladni_nabidka_zapasy.matchId =".$prilezitosti["matchId"]."
+                    GROUP BY matchId";*/
+            //echo $sql."<hr />";
+            //$nabidky = $this->databaze->fetch($sql);
+
+            //echo var_dump($prilezitosti)."<br /><br />";
+            //echo var_dump($nabidky)."<br /><br />";
+            //echo $nabidky["sport"]."<br /><br />";
+
+            //array_push($this->template->nabidky, $nabidky);
+            if(strpos($prilezitosti["nabidka_url"],"tipsport") != false)
+            {
+                array_push($this->template->sazkovka, "Tipsport");
+            }
+            else
+            {
+                array_push($this->template->sazkovka, "Fortuna");   
+            }
+
+            array_push($this->template->nabidky, $prilezitosti);
+
+            array_push($this->template->kurzy_pozice, $prilezitosti["nejmensi_pozice"]);
+            //array_push($this->template->nabidky_kurzy, explode(",", end($this->template->nabidky)["rate"]));
+            array_push($this->template->nabidky_kurzy, explode(",", $prilezitosti["rate"]));
+            //array_push($this->template->nabidky_moznosti, explode(",", end($this->template->nabidky)["shortName"]));
+            array_push($this->template->nabidky_moznosti, explode(",", $prilezitosti["shortName"]));
+            array_push($this->template->kurzy_pole, array_combine(end($this->template->nabidky_moznosti), end($this->template->nabidky_kurzy)));
+            
+            array_push($this->template->id_tiketu, 1);
+
+            $this->template->i++;
+
+        }
+        //echo var_dump($this->template->nabidky);
+        //echo $this->template->i;
+        //$this->template->i--;
+    }

@@ -1,0 +1,9 @@
+parameters:
+
+
+database:
+    dsn: 'mysql:host=127.0.0.1;dbname=sazkovy_web'
+    user: root
+    password: kotajda92
+    options:
+        lazy: yes

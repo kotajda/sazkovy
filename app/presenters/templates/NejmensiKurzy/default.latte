@@ -1,0 +1,69 @@
+{block content}
+<h2>Nejmenší kurzy</h2>
+<div class="row" data-equalizer="formular" id="formular">
+	{form selectForm}
+    <div class="large-4 columns form_input" id="form_vyber" data-equalizer-watch="formular">
+      {input souteze}
+    </div>
+
+    <div class="large-4 columns form_input" data-equalizer-watch="formular">
+      {input vybrane_souteze}
+    </div>
+
+    <div class="row collapse" data-equalizer-watch="formular">
+      <div class="large-2 medium-3 small-6 columns" id="form_vloz" data-equalizer-watch="formular">
+        {input pocet}
+      </div>
+      <div class="large-2 medium-3 small-6 columns" data-equalizer-watch="formular">
+        {input zobrazit}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="large-2 columns">Zvolte sázkovku:</div>
+      <div class="large-10 columns">
+        {foreach $form['sazkovka']->items as $key => $label}
+              {if $key == "vse"}
+                {input sazkovka:$key checked => checked}
+              {else}
+                {input sazkovka:$key}
+              {/if}
+              {label sazkovka:$key}
+        {/foreach}
+      </div>
+    </div>
+
+  {/form}
+</div>
+
+	{if isset($i)}
+	{*for $pom=0;$pom<$i;$pom++}
+    <div class='large-1 columns kurzy_polozka'>{$sazkovka[$pom]}</div>
+		<div class='large-6 columns kurzy_polozka'>{$nabidky[$pom]["name"]}</div>    
+		<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] == "1"}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["1"]) ? $nabidky_moznosti_id_pole[$pom]["1"] : 'x'}' onClick='klik(this.className,this.id);'>{(isset($kurzy_pole[$pom]["1"]) ? $kurzy_pole[$pom]["1"] : 'x')}</div>
+		<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] == "10"}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["10"]) ? $nabidky_moznosti_id_pole[$pom]["10"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["10"]) ? $kurzy_pole[$pom]["10"] : 'x')}</div>
+		<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] == "0"}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["0"]) ? $nabidky_moznosti_id_pole[$pom]["0"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["0"]) ? $kurzy_pole[$pom]["0"] : 'x')}</div>
+		<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] === "02"}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["02"]) ? $nabidky_moznosti_id_pole[$pom]["02"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["02"]) ? $kurzy_pole[$pom]["02"] : 'x')}</div>
+		<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] === "2"}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["2"]) ? $nabidky_moznosti_id_pole[$pom]["2"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["2"])? $kurzy_pole[$pom]["2"] :  'x')}</div>
+    {if isset($kurzy_tiketu[$pom])}
+    <div class="large-8 columns">{if isset($kurzy_tiketu[$pom])}Kurz tiketu{/if}</div><div class="large-4 columns" id='{$id_tiketu[$pom]}_kurz'>{(isset($kurzy_tiketu[$pom])? $kurzy_tiketu[$pom] : '')}</div>
+    <div class="large-8 columns">&nbsp;</div><div class="large-4 columns">{if isset($kurzy_tiketu[$pom])} <br /><br /></br /> {/if}</div>
+    {/if}
+  {/for*}
+
+  {for $pom=0;$pom<$i;$pom++}
+    <div class='large-1 columns kurzy_polozka'>{$sazkovka[$pom]}</div>
+    <div class='large-6 columns kurzy_polozka'>{$nabidky[$pom]["name"]}</div>    
+    <div class='large-1 columns text-center kurzy {if $nabidky[$pom]["nej_kurz"] == $kurzy_pole[$pom]["1"]}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["1"]) ? $nabidky_moznosti_id_pole[$pom]["1"] : 'x'}' onClick='klik(this.className,this.id);'>{(isset($kurzy_pole[$pom]["1"]) ? $kurzy_pole[$pom]["1"] : 'x')}</div>
+    <div class='large-1 columns text-center kurzy {if $nabidky[$pom]["nej_kurz"] == $kurzy_pole[$pom]["10"]}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["10"]) ? $nabidky_moznosti_id_pole[$pom]["10"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["10"]) ? $kurzy_pole[$pom]["10"] : 'x')}</div>
+    <div class='large-1 columns text-center kurzy {if $nabidky[$pom]["nej_kurz"] == $kurzy_pole[$pom]["0"]}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["0"]) ? $nabidky_moznosti_id_pole[$pom]["0"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["0"]) ? $kurzy_pole[$pom]["0"] : 'x')}</div>
+    <div class='large-1 columns text-center kurzy {if $nabidky[$pom]["nej_kurz"] == $kurzy_pole[$pom]["02"]}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["02"]) ? $nabidky_moznosti_id_pole[$pom]["02"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["02"]) ? $kurzy_pole[$pom]["02"] : 'x')}</div>
+    <div class='large-1 columns text-center kurzy {if $nabidky[$pom]["nej_kurz"] == $kurzy_pole[$pom]["2"]}oznaceno{/if} {$id_tiketu[$pom]}_{$nabidky[$pom]["matchId"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["2"]) ? $nabidky_moznosti_id_pole[$pom]["2"] : 'x'}' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["2"])? $kurzy_pole[$pom]["2"] :  'x')}</div>
+    {if isset($kurzy_tiketu[$pom])}
+    <div class="large-8 columns">{if isset($kurzy_tiketu[$pom])}Kurz tiketu{/if}</div><div class="large-4 columns" id='{$id_tiketu[$pom]}_kurz'>{(isset($kurzy_tiketu[$pom])? $kurzy_tiketu[$pom] : '')}</div>
+    <div class="large-8 columns">&nbsp;</div><div class="large-4 columns">{if isset($kurzy_tiketu[$pom])} <br /><br /></br /> {/if}</div>
+    {/if}
+  {/for}
+{/if}
+
+{/block}

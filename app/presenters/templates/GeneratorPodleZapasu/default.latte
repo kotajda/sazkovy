@@ -1,0 +1,285 @@
+{block content}     
+
+<div class="row" id="formular">
+  {form selectForm}
+    <div class="row">
+    <div class="large-4 columns" id="">
+      {input souteze}
+    </div>
+
+    <div class="large-4 columns">
+      {snippet vyber}
+        {input zapasy}
+      {/snippet}
+    </div>
+
+    <div class="large-4 columns">
+      {snippet vyber_zapasu}
+        {input vybrane_zapasy}
+      {/snippet}
+    </div>
+
+    </div>
+    <div class="row">
+      <div class="large-2 columns">
+        Zvolte sázkovku:
+      </div>
+      <div class="large-8 columns">
+        {foreach $form['sazkovka']->items as $key => $label}
+              {if $key == "vse"}
+                {input sazkovka:$key checked => checked}
+              {else}
+                {input sazkovka:$key}
+              {/if}
+              {label sazkovka:$key}
+        {/foreach}
+      </div>
+      <div class="large-1 columns" id="">
+        {input kurz}
+      </div>
+      <div class="large-1 columns">
+        {input generovat}
+      </div>
+    </div>
+    
+  {/form}
+</div>
+
+
+{if isset($i)}
+  <div class="large-12 columns callout">
+  {snippet obal}
+  {var $zacatek_tiketu = 1}
+  {var $id_tiketu = 1}
+	{for $pom=0;$pom<$i;$pom++}
+
+    {if $zacatek_tiketu == 1}
+      
+      {foreach $mensiMoznost as $moznost}
+        {snippet mensiKurz_$id_tiketu}
+          {$moznost}
+        {/snippet}
+      {/foreach}      
+
+      {for $indx_zac=0;$indx_zac<count($zacatek_tiketu_nabidky);$indx_zac++}
+      <div class='large-7 columns kurzy_polozka'>{$zacatek_tiketu_nabidky[$indx_zac]["name"]} ({$zacatek_tiketu_nabidky[$indx_zac]["competitionName"]} - {$zacatek_tiketu_nabidky[$indx_zac]["sport"]})</div>
+
+      <div class='large-1 columns text-center kurzy {if $zacatek_tiketu_kurzy_pozice[$indx_zac] == "1"}oznaceno{/if} {$id_tiketu}_{$zacatek_tiketu_nabidky[$indx_zac]["matchId"]}_{$zacatek_tiketu_nabidky[$indx_zac]["id_souteze"]}' id='{isset($zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["1"]) ? $zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["1"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id);'>{(isset($zacatek_tiketu_kurzy_pole[$indx_zac]["1"]) ? $zacatek_tiketu_kurzy_pole[$indx_zac]["1"] : 'x')}</div>
+
+      <div class='large-1 columns text-center kurzy {if $zacatek_tiketu_kurzy_pozice[$indx_zac] == "10"}oznaceno{/if} {$id_tiketu}_{$zacatek_tiketu_nabidky[$indx_zac]["matchId"]}_{$zacatek_tiketu_nabidky[$indx_zac]["id_souteze"]}' id='{isset($zacatek_tiketu_zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["10"]) ? $zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["10"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($zacatek_tiketu_kurzy_pole[$indx_zac]["10"]) ? $zacatek_tiketu_kurzy_pole[$indx_zac]["10"] : 'x')}</div>
+
+      <div class='large-1 columns text-center kurzy {if $zacatek_tiketu_kurzy_pozice[$indx_zac] == "0"}oznaceno{/if} {$id_tiketu}_{$zacatek_tiketu_nabidky[$indx_zac]["matchId"]}_{$zacatek_tiketu_nabidky[$indx_zac]["id_souteze"]}' id='{isset($zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["0"]) ? $zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["0"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($zacatek_tiketu_kurzy_pole[$indx_zac]["0"]) ? $zacatek_tiketu_kurzy_pole[$indx_zac]["0"] : 'x')}</div>
+
+      <div class='large-1 columns text-center kurzy {if $zacatek_tiketu_kurzy_pozice[$indx_zac] === "02"}oznaceno{/if} {$id_tiketu}_{$zacatek_tiketu_nabidky[$indx_zac]["matchId"]}_{$zacatek_tiketu_nabidky[$indx_zac]["id_souteze"]}' id='{isset($zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["02"]) ? $zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["02"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($zacatek_tiketu_kurzy_pole[$indx_zac]["02"]) ? $zacatek_tiketu_kurzy_pole[$indx_zac]["02"] : 'x')}</div>
+
+      <div class='large-1 columns text-center kurzy {if $zacatek_tiketu_kurzy_pozice[$indx_zac] === "2"}oznaceno{/if} {$id_tiketu}_{$zacatek_tiketu_nabidky[$indx_zac]["matchId"]}_{$zacatek_tiketu_nabidky[$indx_zac]["id_souteze"]}' id='{isset($zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["2"]) ? $zacatek_tiketu_nabidky_moznosti_id_pole[$indx_zac]["2"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($zacatek_tiketu_kurzy_pole[$indx_zac]["2"])? $zacatek_tiketu_kurzy_pole[$indx_zac]["2"] :  'x')}</div>
+    {/for}
+    
+    {/if}
+
+    {php $zacatek_tiketu = 0}
+
+  	<div class='large-7 columns kurzy_polozka'>{$nabidky[$pom]["name"]} ({$nabidky[$pom]["competitionName"]} - {$nabidky[$pom]["sport"]})</div>
+  	<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] == "1"}oznaceno{/if} {$id_tiketu}_{$nabidky[$pom]["matchId"]}_{$nabidky[$pom]["id_souteze"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["1"]) ? $nabidky_moznosti_id_pole[$pom]["1"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id);'>{(isset($kurzy_pole[$pom]["1"]) ? $kurzy_pole[$pom]["1"] : 'x')}</div>
+  	<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] == "10"}oznaceno{/if} {$id_tiketu}_{$nabidky[$pom]["matchId"]}_{$nabidky[$pom]["id_souteze"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["10"]) ? $nabidky_moznosti_id_pole[$pom]["10"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["10"]) ? $kurzy_pole[$pom]["10"] : 'x')}</div>
+  	<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] == "0"}oznaceno{/if} {$id_tiketu}_{$nabidky[$pom]["matchId"]}_{$nabidky[$pom]["id_souteze"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["0"]) ? $nabidky_moznosti_id_pole[$pom]["0"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["0"]) ? $kurzy_pole[$pom]["0"] : 'x')}</div>
+  	<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] === "02"}oznaceno{/if} {$id_tiketu}_{$nabidky[$pom]["matchId"]}_{$nabidky[$pom]["id_souteze"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["02"]) ? $nabidky_moznosti_id_pole[$pom]["02"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["02"]) ? $kurzy_pole[$pom]["02"] : 'x')}</div>
+  	<div class='large-1 columns text-center kurzy {if $kurzy_pozice[$pom] === "2"}oznaceno{/if} {$id_tiketu}_{$nabidky[$pom]["matchId"]}_{$nabidky[$pom]["id_souteze"]}' id='{isset($nabidky_moznosti_id_pole[$pom]["2"]) ? $nabidky_moznosti_id_pole[$pom]["2"] : 'x'}' onMouseOver='pres_kurz(this);' onMouseOut='od_kurz(this);' onClick='klik(this.className,this.id)'>{(isset($kurzy_pole[$pom]["2"])? $kurzy_pole[$pom]["2"] :  'x')}</div>
+    
+    {if isset($tiket[$pom]) && $tiket[$pom] == 1}
+
+        {foreach $vetsiMoznost as $moznost}
+          {snippet vetsiKurz_$id_tiketu}
+            {$moznost}
+          {/snippet}
+        {/foreach}   
+
+      {php $zacatek_tiketu = 0}
+
+        <div class="large-8 columns text-right">Kurz tiketu:</div><div class="large-4 column text-right" id="{$id_tiketu}_kurz">{$kurz_tiketu[$pom]}</div>
+        <div class="large-4 columns">x</div><!--<a class="mujajax id_tiketu_je" n:href="dalsiMoznosti!"><div class="large-4 columns button">Další možnosti</div></a>--><div class="large-4 columns button" onClick='vsadit({$id_tiketu});'>Přejit k sázce</div>
+      </div>
+      {if $pom != ($i-1)}
+        <div class="large-12 columns callout">
+      {/if}
+      {php $id_tiketu++}
+      {php $zacatek_tiketu = 1}
+    {/if}
+    
+  {/for}
+  {/snippet}
+{/if}
+
+
+ <script>
+      $(function () {
+        $.nette.init();
+      });
+
+      function id_tiketu()
+      {
+        return "zkusebnitext";
+      }
+      
+      $(function () {
+      //$("a.mujajax").on("click", function(e){
+      $("a.mujajax").click(function(e){
+            //e.preventDefault();
+            //console.debug(e.currentTarget.offsetParent);
+
+            var divy = e.currentTarget.offsetParent.getElementsByClassName("kurzy");
+            //console.debug(divy);
+            var id_tiketu = divy[0].className.split(" ");
+            id_tiketu = id_tiketu[id_tiketu.length - 1].split("_")[0];
+            //alert(id_tiketu); 
+            var id_zapasu = "";
+            var zapas = "";
+            var na_tiketu_zapas = false;
+            var na_tiketu_soutez = false;
+            var id_oznaceno = "";
+            var id_soutezi = "";
+            var nejmensi_kurz = 0;
+            var nejvetsi_kurz = 0;
+            for(var i=0;i<divy.length;i++)
+            {
+                zapas = divy[i].className.split(" ");
+                zapas_id = zapas[zapas.length - 1].split("_")[1];
+                zapas_soutez = zapas[zapas.length - 1].split("_")[2];
+                //alert(zapas + "<br />" + zapas_id + "<br />" + zapas_soutez);
+                for(var j=0;j<id_zapasu.length;j++)
+                {
+                  na_tiketu_zapas = false;
+                  if(id_zapasu.includes(zapas_id))
+                  {
+                    na_tiketu_zapas = true;
+                  }
+
+                  na_tiketu_soutez = false;
+                  if(id_soutezi.includes(zapas_soutez))
+                  {
+                    na_tiketu_soutez = true;
+                  }
+
+                }
+
+                if(!na_tiketu_zapas && id_zapasu.length > 0)
+                {
+                  id_zapasu = id_zapasu + "," + zapas_id;
+                }
+                else if(!na_tiketu_zapas && id_zapasu.length == 0)
+                {
+                  id_zapasu = zapas_id;
+                }
+
+                if(!na_tiketu_soutez && id_soutezi.length > 0)
+                {
+                  id_soutezi = id_soutezi + "," + zapas_soutez;
+                }
+                else if(!na_tiketu_zapas && id_soutezi.length == 0)
+                {
+                  id_soutezi = zapas_soutez;
+                }
+
+                //alert(id_soutezi);
+
+                if(divy[i].className.includes("oznaceno") && id_oznaceno.length > 0)
+                {
+                  id_oznaceno = id_oznaceno + "," + divy[i].id;
+                }
+                else if(divy[i].className.includes("oznaceno") && id_oznaceno.length == 0)
+                {
+                  id_oznaceno = divy[i].id;
+                }
+
+                if(divy[i].className.includes("oznaceno") && nejmensi_kurz ==  0)
+                {
+                  nejmensi_kurz = divy[i].innerHTML;
+                }
+
+                if(divy[i].className.includes("oznaceno"))
+                {
+                  nejvetsi_kurz = divy[i].innerHTML;
+                }
+
+                //alert(id_soutezi);
+            }
+
+            //alert(id_zapasu);
+            alert("id_tiketu: " + id_tiketu + "<br /> + nejmensi kurz: + " + nejmensi_kurz + " nejvesti kurz: " + nejvetsi_kurz + "<br />zapasy: " + id_zapasu + "<br />souteze: " + id_soutezi + "<br />oznaceno" + id_oznaceno);
+            //console.debug(id_zapasu);
+            e.preventDefault();
+
+            $.nette.ajax({
+            type: 'GET',
+            url: {link dalsiMoznosti!},
+            data: {
+                    'id_tiketu' : id_tiketu,
+                    'zapasy' : id_zapasu,
+                    'oznaceno' : id_oznaceno,
+                    'souteze' : id_soutezi,
+                    'nejmensi_kurz' : nejmensi_kurz,
+                    'nejvetsi_kurz' : nejvetsi_kurz,
+                    /*'id_tiketu' : id_tiketu(),
+                    'kurz_tiketu' : 6,
+                    'zapasy' : zapasy(),
+                    'oznacene_kurzy' : oznacene_kurzy(),*/
+                  },
+            /*success: function(){
+                      $(".oznaceno").css("background-color", "yellow");
+                    }*/
+            error: function(jqXHR, exception){
+                   var msg = '';
+                  if (jqXHR.status === 0) {
+                      msg = 'Not connect.\n Verify Network.';
+                  } else if (jqXHR.status == 404) {
+                      msg = 'Requested page not found. [404]';
+                  } else if (jqXHR.status == 500) {
+                      msg = 'Internal Server Error [500].';
+                  } else if (exception === 'parsererror') {
+                      msg = 'Requested JSON parse failed.';
+                  } else if (exception === 'timeout') {
+                      msg = 'Time out error.';
+                  } else if (exception === 'abort') {
+                      msg = 'Ajax request aborted.';
+                  } else {
+                      msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                  }
+                  alert(msg);
+                  console.log(jqXHR);
+           }
+          });
+        //e.preventDefault();
+        });
+      //e.preventDefault();
+    });
+
+    </script>
+
+    {include jsCallback, input => souteze, link => klikSouteze}
+
+    {define jsCallback}
+    <script src="{$basePath}/js/vendor/jquery.js"></script>
+        <script src="{$basePath}/js/vendor/what-input.js"></script>
+        <script src="{$basePath}/js/vendor/foundation.js"></script>
+        <script src="{$basePath}/js/app.js"></script>
+        <script src="{$basePath}/js/nette.ajax.js"></script>  
+
+    <script>
+    $(function () {
+        $.nette.init();
+    });
+
+    $('#' + {$control["selectForm"][$input]->htmlId}).on('change', function() {
+        $.nette.ajax({
+            type: 'GET',
+            url: {link {$link}!},
+            data: {
+                'value': $(this).val(), 
+            }
+        });
+    });
+
+    </script>
+    {/define}
+    
+{/block content}

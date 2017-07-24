@@ -1,0 +1,66 @@
+<!doctype html>
+<html class="no-js" lang="cs" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{block title}{/block}</title>
+    <link rel="stylesheet" href="{$basePath}/css/foundation.css">
+    <link rel="stylesheet" href="{$basePath}/css/app.css">
+    <link rel="stylesheet" href="{$basePath}/css/vzhled.css">
+
+
+    <script src="{$basePath}/js/skripty.js"></script>
+    <script type="text/javascript" src="{$basePath}/js/netteForms.js"></script>
+
+      
+    {block head}{/block}
+  </head>
+  <body>
+
+    <div class="row">
+      <div class="large-12 columns" style="text-align:center;">
+        <img src="{$basePath}/bannery/tipsport-1140x90.png" />
+        <!--<div class="large-2 columns">
+          <img src="{$basePath}/images/logo-2.png" />
+        </div>
+        <div class="large-10 columns">
+          <div style="width:790px;height:90px;background-color:red;">
+          </div>
+        </div>!-->
+      </div>
+    </div>
+
+    <div class="row" id="hlavni_obsah" data-equalizer>
+      <div class="large-2 columns" data-equalizer-watch>
+        <ul n:inner-foreach="$menuItems as $item => $link" class="menu vertical">
+          <li class="{ifCurrent $link}active{else}neaktivni_menu{/ifCurrent}"><a n:href="$link">{$item}</a></li>
+        </ul>
+        <div id="plovouci" data-sticky-container>
+          <div class="sticky" data-sticky data-top-anchor="plovouci" style="width:160px;height:600px;background-color:red;">
+            <img src="{$basePath}/bannery/tipsport-160x600.jpg" />
+          </div>
+        </div>
+
+      </div>
+      <div class="large-10 columns" data-equalizer-watch>
+        {include #content}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="large-12 columns">
+        zapati
+      </div>
+    </div>
+
+    <script src="{$basePath}/js/vendor/jquery.js"></script>
+    <script src="{$basePath}/js/vendor/what-input.js"></script>
+    <script src="{$basePath}/js/vendor/foundation.js"></script>
+    <script src="{$basePath}/js/app.js"></script>
+    <script src="{$basePath}/js/nette.ajax.js"></script>  
+    
+    <script src="{$basePath}/js/skripty.js"></script>
+
+  </body>
+</html>
