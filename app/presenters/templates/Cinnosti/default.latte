@@ -1,0 +1,28 @@
+{block content}
+	<h3>Přehled činností</h3>
+	<div class="row">
+		<div class="large-2 columns">
+			<strong>Název:</strong>
+		</div>
+		<div class="large-6 columns end">
+			<strong>Popis</strong>
+		</div>
+	</div>
+	{for $pom=0;$pom<$i;$pom++}
+		<div class="row">
+			<div class="large-2 columns">
+				  {$nazvy[$pom]}
+			</div>
+			<div class="large-6 columns">
+				{$popisy[$pom]}
+			</div>
+			<div class="large-2 columns">
+				  {$ceny[$pom]}
+			</div>
+			<div class="large-2 columns">
+				<a n:href="EditovatCinnost: $id_cinnosti[$pom]">Editovat</a>
+				<a href="">Smazat</a>
+			</div>
+		</div>
+	{/for}
+{block}

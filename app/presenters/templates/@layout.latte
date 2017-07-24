@@ -8,59 +8,74 @@
     <link rel="stylesheet" href="{$basePath}/css/foundation.css">
     <link rel="stylesheet" href="{$basePath}/css/app.css">
     <link rel="stylesheet" href="{$basePath}/css/vzhled.css">
-
+    
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/themes/base/jquery-ui.css" type="text/css" media="all" /> 
+	<link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" /> 
+ 
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script> 
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js" type="text/javascript"></script>
 
     <script src="{$basePath}/js/skripty.js"></script>
     <script type="text/javascript" src="{$basePath}/js/netteForms.js"></script>
 
-      
     {block head}{/block}
   </head>
-  <body>
+<body>
+	<div class="row">
+		<div class="large-12 columns text-right" id="zahlavi">
+			<img src="{$basePath}/images/logo1.png">
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-2 columns">
+			{if !isset($prihlaseni)}
+				<ul class="menu vertical">
+					<li><a n:href="Odhlaseni:">Odhlásit</a></li>
+				</ul>
+			{/if}
+			{if isset($menuItems)}
+			<ul n:inner-foreach="$menuItems as $item => $link" class="menu vertical">
+          		<li class="{ifCurrent $link}active{/ifCurrent}"><a n:href="$link">{$item}</a></li>
+        	</ul>
+        	{/if}
+		</div>
+		<div class="large-10 columns">
+			{block content}
+			{/block}
+		</div>
+	</div>
 
-    <div class="row">
-      <div class="large-12 columns" style="text-align:center;">
-        <img src="{$basePath}/bannery/tipsport-1140x90.png" />
-        <!--<div class="large-2 columns">
-          <img src="{$basePath}/images/logo-2.png" />
-        </div>
-        <div class="large-10 columns">
-          <div style="width:790px;height:90px;background-color:red;">
-          </div>
-        </div>!-->
-      </div>
-    </div>
+	<div class="row">
+		<div class="large-12 columns" id="zapati"></div>
+	</div>
 
-    <div class="row" id="hlavni_obsah" data-equalizer>
-      <div class="large-2 columns" data-equalizer-watch>
-        <ul n:inner-foreach="$menuItems as $item => $link" class="menu vertical">
-          <li class="{ifCurrent $link}active{else}neaktivni_menu{/ifCurrent}"><a n:href="$link">{$item}</a></li>
-        </ul>
-        <div id="plovouci" data-sticky-container>
-          <div class="sticky" data-sticky data-top-anchor="plovouci" style="width:160px;height:600px;background-color:red;">
-            <img src="{$basePath}/bannery/tipsport-160x600.jpg" />
-          </div>
-        </div>
+	{block scripts}
+	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+	<script src="https://nette.github.io/resources/js/netteForms.min.js"></script>
+	<script src="{$basePath}/js/main.js"></script>
 
-      </div>
-      <div class="large-10 columns" data-equalizer-watch>
-        {include #content}
-      </div>
-    </div>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script> 
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js" type="text/javascript"></script>
 
-    <div class="row">
-      <div class="large-12 columns">
-        zapati
-      </div>
-    </div>
+	<script n:syntax="off">
+		$.datepicker.regional['cs'] = { 
+			closeText: 'Cerrar', 
+			prevText: 'Předchozí', 	
+			nextText: 'Další', 
+			currentText: 'Hoy', 
+			monthNames: ['Leden','Únor','Březen','Duben','Květen','Červen', 'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'],
+			monthNamesShort: ['Le','Ún','Bř','Du','Kv','Čn', 'Čc','Sr','Zá','Ří','Li','Pr'], 
+			dayNames: ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'], 
+			dayNamesShort: ['Ne','Po','Út','St','Čt','Pá','So',], dayNamesMin: ['Ne','Po','Út','St','Čt','Pá','So'], 
+			weekHeader: 'Sm',
+			dateFormat: 'yy-mm-dd', 
+			firstDay: 1, 
+			isRTL: false, 
+			showMonthAfterYear: false, 
+			yearSuffix: ''}; 
 
-    <script src="{$basePath}/js/vendor/jquery.js"></script>
-    <script src="{$basePath}/js/vendor/what-input.js"></script>
-    <script src="{$basePath}/js/vendor/foundation.js"></script>
-    <script src="{$basePath}/js/app.js"></script>
-    <script src="{$basePath}/js/nette.ajax.js"></script>  
-    
-    <script src="{$basePath}/js/skripty.js"></script>
-
-  </body>
+		$.datepicker.setDefaults($.datepicker.regional['cs']);
+	</script>
+	{/block}
+</body>
 </html>

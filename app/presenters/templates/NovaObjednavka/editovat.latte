@@ -1,0 +1,59 @@
+{block content}	
+	<h2>Editace</h2>
+	{form selectForm}
+		<div class="callout formular">
+			<div class="row">
+				<div class="large-4 columns">
+					{input zakaznici}
+				</div>
+				<div class="large-4 columns">
+					{input cinnosti}
+				</div>
+				<div class="large-4 columns">
+					{input vybrane_cinnosti}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-2 columns">
+					<script>
+						$.datepicker.regional['cs'] = { 
+		                closeText: 'Cerrar', 
+		                prevText: 'Předchozí', 
+		                nextText: 'Další', 
+		                currentText: 'Hoy', 
+		                monthNames: ['Leden','Únor','Březen','Duben','Květen','Červen', 'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'],
+		                monthNamesShort: ['Le','Ún','Bř','Du','Kv','Čn', 'Čc','Sr','Zá','Ří','Li','Pr'], 
+		                dayNames: ['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'], 
+		                dayNamesShort: ['Ne','Po','Út','St','Čt','Pá','So',], 
+		                dayNamesMin: ['Ne','Po','Út','St','Čt','Pá','So'], 
+		                weekHeader: 'Sm', 
+		                dateFormat: 'yy-mm-dd', 
+		                firstDay: 1, 
+		                isRTL: false, 
+		                showMonthAfterYear: false, 
+		                yearSuffix: ''}; 
+
+	                	$.datepicker.setDefaults($.datepicker.regional['cs']);
+
+						$( function() {
+					    	$( "#datepicker" ).datepicker();
+					  	} );
+					</script>
+					{input datum}
+				</div>
+				<div class="large-2 columns">
+					{input hodiny}
+				</div>
+				<div class="large-2 columns end">
+					{input minuty}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-3 columns">
+					{input objednat}
+				</div>
+			</div>
+		</div>
+  {/form}
+  {isset($zprava)? $zprava}
+{block}

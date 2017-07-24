@@ -1,0 +1,33 @@
+{block content}
+	<h3>Přehled zákazníků</h3>
+	<div class="row">
+		<div class="large-3 columns">
+			<strong>Jméno a příjmení</strong>
+		</div>
+		<div class="large-4 columns">
+			<strong>Adresa</strong>
+		</div>
+		<div class="large-2 columns">
+			<strong>Objednávky</strong>
+		</div>
+		<div class="large-2 columns end">
+			<strong>Možnosti</strong>
+		</div>
+	</div>
+	{for $pom=0;$pom<$i;$pom++}
+		<div class="row">
+		<div class="large-3 columns">
+			  {$jmena[$pom]} {$prijmeni[$pom]}
+		</div>
+		<div class="large-4 columns">
+			{($adresy[$pom] != "") ? $adresy[$pom] : "-"}
+		</div>
+		<div class="large-2 columns end">
+			{($objednavky[$pom] != "") ? $objednavky[$pom] : "-"}
+		</div>
+		<div class="large-2 columns end">
+			<a n:href="EditovatZakaznika: $id_zakazniku[$pom]">Editovat</a>
+		</div>
+	</div>
+	{/for}
+{block}

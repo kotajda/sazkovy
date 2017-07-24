@@ -1,0 +1,39 @@
+{block content}
+	<h3>Vložit činnost</h3>	
+	{form selectForm}
+		<div class="row formular">
+			<div class="large-8 columns large-offset-2">
+				<div class="callout">
+					<div class="row">
+						<div class="large-2 columns text-right">
+							<label for="nazev" class="text-right middle">Název:</label>
+						</div>
+						<div class="large-5 columns">
+							{input nazev}
+						</div>
+						<div class="large-2 columns text-right">
+							<label for="cena" class="text-right middle">Cena:</label>
+						</div>
+						<div class="large-3 columns">
+							{input cena}
+						</div>
+					</div>
+					<div class="row">
+						<div class="large-2 columns text-right">
+							<label for="popis" class="text-right middle">Popis:</label>
+						</div>
+						<div class="large-10 columns">
+							{input popis}
+						</div>
+					</div>
+					<div class="row">
+						<div class="large-3 large-offset-9 columns">
+							{input vlozit}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+  {/form}
+  {isset($zprava)? $zprava}
+{block}

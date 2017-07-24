@@ -1,0 +1,43 @@
+{block content}	
+	<h3>Editace objednávky</h3>
+	{form selectForm}
+		<div class="callout formular">
+			<div class="row">
+				<div class="large-4 columns">
+					<strong>Jméno a příjmení</strong>{input zakaznici}
+				</div>
+				<div class="large-4 columns">
+					<strong>Činnosti k výběru</strong>{input cinnosti}
+				</div>
+				<div class="large-4 columns">
+					<strong>Vybrané činnosti</strong>{input vybrane_cinnosti}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-2 columns">
+					<strong>Datum a čas</strong>
+					<script n:syntax="off">
+						$( function() {
+					    	$( "#datepicker" ).datepicker({dateFormat: "yy-mm-dd"});
+					  	} );
+					</script>
+					{input datum}
+				</div>
+				<div class="large-2 columns">
+					<br />
+					{input hodiny}
+				</div>
+				<div class="large-2 columns end">
+					<br />
+					{input minuty}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-3 large-offset-9 columns">
+					{input objednat}
+				</div>
+			</div>
+		</div>
+  {/form}
+  {isset($zprava)? $zprava}
+{block}
