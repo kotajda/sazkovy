@@ -1,0 +1,49 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Editovat reference | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+<div class="row nadpis_admin">
+	<div class="large-12 columns">
+		<h3>Přehled kategorií pro reference</h3>
+		<p>Zde je možné přidávat a upravovat názvy kategorií pro reference.</p>
+	</div>
+</div>
+{for $i=0;$i<count($kategorie_reference);$i++}
+<div class="row">
+	<div class="large-3 columns">{$kategorie_reference[$i]}</div><div class="large-2 columns text-right"><a href="#" onClick="vyplnit_formular({$id_reference[$i]},{$kategorie_reference[$i]});">Přejmenovat</a></div><div class="large-2 columns end">Smazat</div>
+</div>
+{/for}
+<hr />
+{if isset($zprava)}
+<div class="row">
+	<div class="large-12 columns">
+		<p>
+			{$zprava}
+		</p>
+	</div>
+</div>
+{/if}
+{form selectForm}
+	<div class="row">
+		<div class="large-7 columns">
+			<strong>Vložit novou kategorii pro reference nebo přejmenovat stávající:</strong>{input kategorie}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-5 columns">
+			{input vlozit}
+		</div>
+	</div>
+{/form}
+</div>
+
+<script>
+	function vyplnit_formular(id_reference, kategorie_reference)
+	{
+		document.getElementById("id_kategorie").value = id_reference;
+		document.getElementById("kategorie").value = kategorie_reference;
+	}
+</script>
+{/block}

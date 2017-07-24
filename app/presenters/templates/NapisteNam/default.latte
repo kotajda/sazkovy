@@ -1,0 +1,76 @@
+{block title}
+Stavitelství Šindler, s.r.o.
+{/block}
+{block meta}
+  <meta name="description" content="Chcete kontaktovat Stavitelství Šindler? Zavolejte nám nebo vyplňte kontaktní formulář.">
+{/block}
+{block content}
+<div class="large-12 columns">
+        <div class="row">
+          <div class="large-10 columns large-offset-1 zabarveni">
+            <h1>Napište nám</h1>
+            <p>
+              Potřebujete se nás na něco zeptat? Ke kontaktování můžete použít některé z uvedených telefonních čísel nebo i tento kontaktní formulář. Na odeslanou zprávu odpovíme co nejrychleji to bude možné.
+            </p>
+          </div>
+        </div>
+        <div class="row" id="kontaktni_formular">
+          <div class="large-8 columns large-offset-2 large-centered text-right">
+          {if isset($zprava)}
+          <div class="row text-center">
+            <p><strong>{$zprava}</strong></p>
+          </div>
+          {/if}
+          {form selectForm}
+          <div class="row">
+            <div class="large-9 columns large-centered">
+            <div class="large-4 columns">
+              <label>Vaše jméno a příjmení:<label>
+            </div>
+            <div class="large-8 columns">
+            	{input jmeno_prijmeni}
+            </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-9 columns large-centered">
+            <div class="large-4 columns">
+              <label>Váše telefonní číslo:<label>
+            </div>
+            <div class="large-8 columns">
+              {input telefon}
+            </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-9 columns large-centered">
+            <div class="large-4 columns">
+              <label>Váš email:<label>
+            </div>
+            <div class="large-8 columns">
+              {input email}
+            </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-9 columns large-centered">
+            <div class="large-4 columns">
+              <label>Obsah zprávy:<label>
+            </div>
+            <div class="large-8 columns">
+            	{input zprava}
+            </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-9 columns large-centered">
+            <div class="large-8 columns large-offset-4 text-left">
+            	{input odeslat}
+            </div>
+          </div>
+          </div>
+        {/form}
+          </div>
+        </div>
+      </div>
+{/block}

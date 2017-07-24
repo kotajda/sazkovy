@@ -14,15 +14,15 @@ use Nette\Security\User;
 
 class OdhlaseniPresenter extends BasePresenter
 {
-	private $databaze;
-	public function __construct(Nette\Database\Context $databaze)
+    /*private $databaze;
+    public function __construct(Nette\Database\Context $databaze)
     {
         $this->databaze = $databaze;
-    }
+    }*/
     
-	public function renderDefault()
-	{
-		$this->template->anyVariable = 'any value';
+    public function renderDefault()
+    {
+        $this->template->anyVariable = 'any value';
         //$this->template->vykreslit_formular = false;
 
         $uzivatel = $this->getUser();
@@ -35,5 +35,5 @@ class OdhlaseniPresenter extends BasePresenter
         {
             $this->redirect("Prihlaseni:");
         }
-	}
+    }
 }

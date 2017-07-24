@@ -1,0 +1,115 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Editovat služby | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Seznam služeb</h3>
+		</div>
+   	</div>
+   	<div class="row">
+		<div class="large-3 columns">
+			<strong>Název služby</strong>
+		</div>
+		<div class="large-6 columns">
+			<strong>Popis služby</strong>
+		</div>
+		<div class="large-2 columns">
+			<strong>Status</strong>
+		</div>
+		<div class="large-1 columns">
+			<strong>Možnosti</strong>
+		</div>
+	</div>
+	<hr />
+	  	{for $i=0;$i<count($nazvy_sluzeb);$i++}
+	   		<div class="row">
+		   		<div class="large-3 columns">
+		   			{$nazvy_sluzeb[$i]}
+		   		</div>
+		       	<div class="large-6 columns">
+		       		{$popisy_sluzeb[$i]}
+		       	</div>
+		       	<div class="large-2 columns">
+		       		{if $aktualnost_sluzeb[$i] == 1}
+		       			Aktivní služba
+		       		{else}
+		       			Neaktivní služba
+		       		{/if}
+		       	</div>
+		       	<div class="large-1 columns">
+		       		<a href="#" onClick="vyplnit_formular({$id_sluzeb[$i]},{$nazvy_sluzeb[$i]},{$popisy_sluzeb[$i]},{$aktualnost_sluzeb[$i]})">Změnit</a>
+		       		<br />
+		       		<a href="#" onClick="smazat_sluzbu({$id_sluzeb[$i]})">Smazat</a>
+		       	</div>
+		   	</div>
+		   	<hr />
+	   	{/for}
+
+<div class="row nadpis_admin">
+	<div class="large-12 columns">
+		<h3>Vložte novou nebo upravte některou stávající službu</h3>
+		<p>Pro úpravu staré nabídky je nutné kliknout na změnit a potom editovat údaje ve formuláři.</p>
+	</div>
+</div> 	
+{if isset($zprava)}
+<div class="row">
+	<div class="large-12 columns">
+		<p>
+			{$zprava}
+		</p>
+	</div>
+</div>
+{/if}
+  	{form selectForm}
+	  	<div class="row">
+		  	<div class="large-6 columns">
+		  		<div class="row">
+		  			<div class="large-6 columns">
+		  				Název služby {input nazev_sluzby}
+		  			</div>
+		  		</div>
+		  		<div class="row">
+		  			<div class="large-6 columns">
+		  				Aktivovat službu
+		  				{foreach $form[aktivovat]->items as $key => $label}
+						   <label>
+						      <input type="radio" n:name="aktivovat:$key" /> {$label}
+						   </label>
+						{/foreach}
+		  			</div>
+		  		</div>
+		  	</div>
+		  	<div class="large-6 columns">
+		  		Popis služby {input popis_sluzby}
+		  	</div>
+	  	</div>
+	  	<div class=row>
+	  		<div class="large-6 columns">
+	  			{input vlozit}
+	  		</div>
+	  	</div>
+  	{/form}
+</div>
+
+<script>
+	function vyplnit_formular(id_sluzby, nazev_sluzby, popis_sluzby, aktualnost_sluzby)
+	{
+		document.getElementById("id_sluzby").value = id_sluzby;
+		document.getElementById("nazev_sluzby").value = nazev_sluzby;
+		document.getElementById("popis_sluzby").value = popis_sluzby;
+		document.getElementById("frm-selectForm-aktivovat-" + aktualnost_sluzby).checked = true;
+	}
+
+	function smazat_sluzbu(id_sluzby)
+	{
+		//alert("idecko je " + id_sluzby);
+		if(confirm("Opravdu chcete tuto službu nenávratně smazat?"))
+  		{
+  			window.location = {$basePath} + "/smazani-sluzby?id_sluzby=" + id_sluzby;
+  		}
+	}
+</script>
+{/block}

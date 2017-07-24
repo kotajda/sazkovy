@@ -1,45 +1,20 @@
+{block title}
+Stavitelství Šindler, s.r.o.{/block}
+{block meta}
+	<meta name="description" content="Stavitelství Šindler bylo založeno 10. srpna 1999 a od té doby se podílelo na spoustě různorodých stavebních projektech. Zvládáme stavby na klič nebo i dílčí celky dle požadavků objednavatele.">
+{/block}
 {block content}
-<h3>Dnešní objednávky</h3>
-<div class="row formular">
-		<div class="large-2 columns">
-			<strong>Datum:</strong>	
-		</div>
-		<div class="large-2 columns">
-			<strong>Zákazník:</strong>
-		</div>
-		<div class="large-4 columns">
-			<strong>Objednávka</strong>
-		</div>
-		<div class="large-2 columns">
-			<strong>Cena</strong>
-		</div>
-		<div class="large-2 columns end">
-			<strong>Možnosti</strong>
-		</div>
-	</div>
-	{for $pom=0;$pom<$i;$pom++}
-		<div class="row">
-			<div class="large-2 columns">
-				{$datumy[$pom]}
-			</div>
-			<div class="large-2 columns">
-				{$zakaznici[$pom]}
-			</div>
-			<div class="large-4 columns">
-				{$cinnosti[$pom]}
-			</div>
-			<div class="large-2 columns">
-				{$ceny[$pom]} Kč
-			</div>
-			<div class="large-2 columns end">
-				<a n:href="EditovatObjednavku: $id_objednavek[$pom]">Editovat</a>
-			</div>
-		</div>
-		<hr />
-			<div class="row">
-				<div class="large-8 columns text-right"><strong>Celková tržba</strong></div>
-				<div class="large-4 columns"><strong>{$celkova_trzba} Kč</strong></div>
-			</div>
-		<hr />
-	{/for}
-{block}
+<div class="large-12 columns">
+	<h1>Stavitelství Šindler</h1>
+	<p>
+		Firma byla založena dne 10. srpna 1999 jako společnost s ručením omezeným zabývající se prováděním staveb, jejich změn a odstraňováním. Mezi nosné činnosti naší společnosti patří výstavba, rekonstrukce a modernizace v oborech průmyslové výstavby, občanské výstavby, bytové výstavby a zemní práce. Veškeré práce prováděné ve stavebnictví je společnost schopna realizovat formou "na klíč" nebo jako dílčí celky staveb dle požadavků objednatelů.
+	</p>
+	<img src="{$basePath}/css/obrazek.jpg" id="obrazek"/>
+	<p>
+		Stavitelství Šindler, s.r.o. zavedla dle ČSN ISO 9001:2000 systém managementu jakosti v rozsahu své činnosti a to na provádění staveb, jejich změn a odstraňování.	
+	</p>
+	<p>
+		Na případnou spolupráci s Vámi se těší tradiční a spolehlivá regionální stavební firma Stavitelství Šindler, s.r.o..
+	</p>
+</div>
+{/block}

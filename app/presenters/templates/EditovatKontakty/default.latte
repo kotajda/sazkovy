@@ -1,0 +1,62 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Editovat kontakty | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Upravte kontaktní údaje</h3>
+			<p>Jsou to údaje, které se poté zobrazí v zápatí webu.</p>
+		</div>
+	</div> 
+	{if isset($zprava)}
+	<div class="row">
+		<div class="large-12 columns">
+			<p>
+				{$zprava}
+			</p>
+		</div>
+	</div>
+	{/if}
+	{form selectForm}
+	<div class="row">
+		<div class="large-6 columns">
+			Mobil:{input mobil}
+		</div>
+		<div class="large-6 columns">
+			Pevná linka:{input pevna_linka}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-6 columns">
+			Fax:{input fax}
+		</div>
+		<div class="large-6 columns">
+			Email:{input email}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-6 columns">
+			Ulice:{input ulice}
+		</div>
+		<div class="large-6 columns">
+			Město:{input mesto}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-6 columns">
+			PSČ:{input psc}
+		</div>
+		<div class="large-6 columns">
+			{input id_kontaktu}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-6 columns">
+			{input vlozit}
+		</div>
+	</div>
+	{/form}
+</div>
+{/block}

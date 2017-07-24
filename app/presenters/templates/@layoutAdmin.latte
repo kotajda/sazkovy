@@ -1,0 +1,57 @@
+<!doctype html>
+<html class="no-js" lang="cs" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{include #title}</title>
+    <link rel="stylesheet" href="{$basePath}/css/foundation.css">
+    <link rel="stylesheet" href="{$basePath}/css/app.css">
+    <link rel="stylesheet" href="{$basePath}/css/vzhled.css">
+  </head>
+  <body>
+    <div class="row">
+      <div class="large-12 columns" id="zahlavi">
+        <img class="large-12" src="{$basePath}/css/puvodni-zahlavi.jpg" alt="toto je obrázek"/>
+      </div>
+    </div>
+
+    <div class="row">
+    <div class="large-2 columns">
+      {if !isset($prihlaseni)}
+        <ul class="menu vertical">
+          <li><a n:href="Odhlaseni:">Odhlásit</a></li>
+        </ul>
+      {/if}
+      {if isset($menuAdministrace)}
+      <ul n:inner-foreach="$menuAdministrace as $item => $link" class="menu vertical">
+        <li class="{ifCurrent $link}aktivni_menu_admin{else}neaktivni_menu_admin{/ifCurrent}"><a n:href="$link">{$item}</a></li>
+      </ul>
+      {/if}
+    </div>
+    <div id="obsah" class="large-10 columns">
+      {block content}
+      {/block}
+    </div>
+  </div>
+
+    <div class="row" id="zapati">
+
+    </div>
+    <div class="row" id="spodek">
+      <div class="large-12 columns text-center">
+        © Stavitelství Šindler
+      </div>
+    </div>
+
+    {block scripts}
+    <script src="{$basePath}/js/vendor/jquery.js"></script>
+    <script src="{$basePath}/js/vendor/what-input.js"></script>
+    <script src="{$basePath}/js/vendor/foundation.js"></script>
+    <script src="{$basePath}/js/app.js"></script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="https://nette.github.io/resources/js/netteForms.min.js"></script>
+	<script src="{$basePath}/js/main.js"></script>
+	{/block}
+  </body>
+</html>

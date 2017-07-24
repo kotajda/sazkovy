@@ -1,0 +1,33 @@
+{block title}
+Nabídka práce | Stavitelství Šindler, s.r.o.
+{/block}
+{block meta}
+	<meta name="description" content="Stavitelství Šindler hledá nové zaměstnance na tyto volné pracovní pozice.">
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row">
+   		<div class="large-10 columns large-offset-1 zabarveni">
+       		<h1>Nabídka práce</h1>
+            <p>
+              Stavitelství Šindler v současné době hledá nové zaměstnance na tyto volné pracovní pozice. Pro bližší informace nás můžete kontaktovat na jednom z našich kontaktů nebo nás navštívit v našem podhorském sídle.
+           	</p>
+       	</div>
+   	</div>
+   	<div class="row">
+	   	<div class="large-10 columns large-centered" id="nabidky_prace">
+	   		{if count($nazvy_pozic) == 0}
+	   			<p>
+	   				V současné chvíli nemáme volné místa...
+	   			</p>
+	   		{/if}
+	   		{for $i=0;$i<count($nazvy_pozic);$i++}
+		   		<h2>{$nazvy_pozic[$i]}</h2>
+		       	<p>
+		       		{$popisy_pozic[$i]}
+		       	</p>
+	   		{/for}
+	   	</div>
+  	</div>
+</div>
+{/block}

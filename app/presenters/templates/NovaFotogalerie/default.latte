@@ -1,0 +1,48 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Nová fotogalerie | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Vložit novou fotogalerii</h3>
+			<p>Vložená fotogalerie bude v odpovídají sekci v referencích.</p>
+		</div>
+	</div>
+	{if isset($zpravy)}
+		<div class="row">
+			{for $i=0;$i<count($zpravy);$i++}
+				<p>{$zpravy[$i]}</p>
+			{/for}
+		</div>
+	{/if}
+	{form selectForm}
+		<div class="callout formular">
+			<div class="row">
+				<div class="large-6 columns">
+					<strong>Název</strong>{input nazev}
+				</div>
+				<div class="large-6 columns">
+					<strong>Soubory<strong>{input soubory}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-6 columns">
+					<strong>Kategorie</strong>{input kategorie}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-12 columns">
+					<strong>Popis<strong>{input popis}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-3 columns">
+					{input vlozit}
+				</div>
+			</div>
+		</div>
+  	{/form}
+</div>
+{/block}

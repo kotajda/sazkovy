@@ -1,0 +1,58 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Uživatel | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Editace uživatele</h3>
+			<p>Možnost upravit údaje pro přihlášení do administrace.</p>
+		</div>
+	</div>
+	{if isset($zprava)}
+<div class="row">
+	<div class="large-12 columns">
+		<p>
+			{$zprava}
+		</p>
+	</div>
+</div>
+{/if}
+
+	{form selectForm}
+	<div class="row">
+		<div class="large-6 columns">
+			Jméno:{input jmeno}
+		</div>
+		<div class="large-6 columns">
+			Původní heslo:{input puvodni_heslo}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-6 columns">
+			Nové heslo:{input nove_heslo}
+		</div>
+		<div class="large-6 columns">
+			Nové heslo znovu:{input opakovane_heslo}
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-6 columns">
+			{input id_uzivatele}
+		</div>
+		<div class="large-3 columns end">
+			{input vlozit}
+		</div>
+	</div>
+	{/form}
+</div>
+
+<script>
+	function vyplnit_formular(id_uzivatele, jmeno)
+	{
+		document.getElementById("id_uzivatele").value = id_uzivatele;
+		document.getElementById("jmeno").value = jmeno;
+	}
+</script>
+{/block}

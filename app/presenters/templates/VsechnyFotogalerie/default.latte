@@ -1,0 +1,45 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Všechny fotogalerie | Administrace
+{/block}
+
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Všechny fotogalerie</h3>
+			<p>Přehled všech fotogalerií v referencích a možnosti jejich úprav.</p>
+		</div>
+	</div>
+	{for $i=0;$i<count($nazvy_galerii);$i++}
+		<h4>{$nazvy_galerii[$i]}</h4>
+		<div class="row">
+			{if isset($url_fotek[$i])}
+				{php $url_obr = explode(";",$url_fotek[$i])}
+				{for $j=0;$j<count($url_obr);$j++}
+					<div class="large-3 columns">
+						<img src="{$basePath}/{$url_obr[$j]}" />
+					</div>
+				{/for}
+			{else}
+				<div class="large-3 columns">Galerie bez fotky</div>
+			{/if}
+			<div class="large-3 columns">
+				<a n:href="EditaceFotogalerie: $id_galerii[$i]">Editovat galerii</a>
+				<hr />
+				<a onClick="smazat({$id_galerii[$i]});">Smazat fotogalerii a jeji fotky</a>
+			</div>
+		</div>
+		<hr />
+	{/for}
+</div>
+	<script>
+  		function smazat(id_galerie)
+  		{
+  			if(confirm("Opravdu chcete smazat tuto galerii a všechny její fotky?"))
+  			{
+  				window.location = {$basePath} + "/smazani-fotogalerie?id_galerie=" + id_galerie;
+  			}
+  		}
+  	</script>
+{/block}

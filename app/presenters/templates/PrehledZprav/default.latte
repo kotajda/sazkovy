@@ -1,0 +1,51 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Přehled zpráv | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Přehled zpráv</h3>
+			<p>Zprávy odeslané přes kontaktní formulář.</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-2 columns">
+			<strong>Jméno a příjmení</strong>
+		</div>
+		<div class="large-6 columns">
+			<strong>Obsah zprávy</strong>
+		</div>
+		<div class="large-2 columns">
+			<strong>Kontakty</strong>
+		</div>
+		<div class="large-2 columns">
+			<strong>Operace</strong>
+		</div>
+	</div>
+	<hr />
+	{for $i=0;$i<count($jmena);$i++}
+	<div class="row {if $stavy[$i]=='precteno'}precteno{/if}">
+		<div class="large-2 columns">
+			{$jmena[$i]}
+		</div>
+		<div class="large-6 columns">
+			<span class="datum_zpravy_admin">{$datum_cas[$i]}</span><br />{$zpravy[$i]}
+		</div>
+		<div class="large-2 columns">
+			{$telefony[$i]}<br />
+			{$emaily[$i]}
+		</div>
+		<div class="large-2 columns">
+			{form selectForm}
+				{input operace}
+				{input id_zpravy value => $id_zpravy[$i]}<br />
+				{input provest}
+			{/form}
+		</div>
+	</div>
+	<hr />
+	{/for}
+</div>
+{/block}

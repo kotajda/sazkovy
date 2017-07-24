@@ -1,0 +1,65 @@
+{block title}
+Reference | Stavitelství Šindler, s.r.o.
+{/block}
+{block meta}
+  <meta name="description" content="Stavitelství Šindler se podílelo na různorodých projektech občanské i průmyslové výstavby. Zde se můžete podívat na naše fotogalerie naší práce.">
+{/block}
+{block content}
+	{for $i=0;$i<count($kategorie_reference);$i++}
+
+	{/for}
+	<div class="large-3 columns show-for-large" id="menu_vlevo" data-sticky-container>
+        <div class="large-12 sticky" data-sticky data-top-anchor="obsah">
+        	<ul n:inner-foreach="$kategorie_reference as $item => $link" class="menu vertical" data-magellan data-options data-active-class="aktivni_menu">
+          		<li><a href="#kategorie_{$item}" class="moznosti {if $item==1}aktivni_menu{/if}">{$link}</a></li>
+        	</ul>
+        </div>
+   	</div>
+   	<div class="large-9 small-12 columns">
+        <div class="row zabarveni">
+          <div class="large-12 columns">
+            	<h1>Naše reference</h1>
+             	<p>
+                Za necelé dvě dekády se Stavitelství Šindler podílelo na mnoha různorodých projektech. Na této stránce nabízíme k nahlédnutí ukázku z našich referencí. Můžete se zde podívat na fotografie ukazující naši práci v interiérech a exteriérech bytových i průmyslových staveb.
+              </p>
+              <p>
+
+              </p>
+          </div>
+       	</div>
+        {for $i=0;$i<count($kategorie_reference);$i++}
+          <div class="row {if $i==0}zabarveni{/if}" id="kategorie_{$i+1}" {if $i>0}data-magellan-target="kategorie_{$i+1}"{/if}>
+            <div class="large-12 columns nadpis_reference">
+              <h2>{$kategorie_reference[$i+1]}</h2>
+            </div>
+          </div>
+          {if isset($fotogalerie_nazvy[$i])}
+          {for $j=0;$j<count($fotogalerie_nazvy[$i]);$j++}
+            <div class="row">
+              <div class="large-12 columns">
+                <h3>{$fotogalerie_nazvy[$i][$j]}</h3>
+                <p>{$fotogalerie_popisy[$i][$j]}</p>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="large-12 columns">
+                {if isset($fotky_nazvy[$i][$j])}
+                {for $k=0;$k<count($fotky_nazvy[$i][$j]);$k++}
+                  {if $k % 3 == 0 && $k != 0}
+                      </div>
+                     </div>  
+                    <div class="row">
+                      <div class="large-12 columns">
+                  {/if}
+                  <a href="{$basePath}/{$fotky_url[$i][$j][$k]}" data-lightbox="galerie_{$i}_{$j}" data-title="{$fotky_nazvy[$i][$j][$k]}"><img src="{$basePath}/{$nahledy_url[$i][$j][$k]}" alt="{$fotky_nazvy[$i][$j][$k]}" class="large-4 columns obrazek_galerie" /></a>
+                {/for}
+                {/if}
+              </div>
+            </div>
+          
+          {/for}
+          {/if}
+        {/for}
+  	</div>
+{/block}

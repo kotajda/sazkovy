@@ -1,0 +1,76 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Editace fotogalerie | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Editace fotogalerii: {$nazev_galerie}</h3>
+			<p>Možnost upravit konkrétní fotogalerii a smazat některé její fotky.</p>
+		</div>
+	</div>
+	{if isset($zpravy)}
+		<div class="row">
+			{for $i=0;$i<count($zpravy);$i++}
+				<p>{$zpravy[$i]}</p>
+			{/for}
+		</div>
+	{/if}
+	{form selectForm}
+		<div class="callout formular">
+			<div class="row">
+				<div class="large-6 columns">
+					<strong>Název</strong>{input nazev}
+				</div>
+				<div class="large-6 columns">
+					<strong>Soubory<strong>{input soubory}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-6 columns">
+					<strong>Kategorie</strong>{input kategorie}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-12 columns">
+					<strong>Popis<strong>{input popis}
+				</div>
+			</div>
+			<div class="row">
+				<div class="large-3 columns">
+					{input editovat}
+				</div>
+			</div>
+		</div>
+  	{/form}
+
+  				
+	{for $i=0;$i<count($nazvy_fotek);$i=$i+2}
+		<div class="row">
+			{for $j=0;$j<2;$j++}
+			{if $i<count($nazvy_fotek)-$j}
+			<div class="large-6 columns {if $i == (count($nazvy_fotek)-1)}end{/if}">
+				<div class="large-8 columns" data-equalizer-watch="obr">
+					<img src="{$basePath}/{$url_fotek[$i+$j]}" />
+				</div>
+				<div class="large-4 columns">
+					<a onClick="smazat({$id_fotek[$i+$j]});">Smazat</a>
+				</div>
+			</div>
+			{/if}
+			{/for}
+		</div>
+	{/for}
+</div>
+
+  	<script>
+  		function smazat(id_fotky)
+  		{
+  			if(confirm("Opravdu chcete smazat tento obrázek?"))
+  			{
+  				window.location = {$basePath} + "/smazat-obrazek?id_fotky=" + id_fotky;
+  			}
+  		}
+  	</script>
+{/block}

@@ -1,0 +1,33 @@
+{block title}
+Naše služby | Stavitelství Šindler, s.r.o.
+{/block}
+{block meta}
+	<meta name="description" content="Stavitelství Šindler už po dvě desetiletí nabízí celou řadu služeb ve stavebnictví. Nabízíme bohaté zkušenosti a spolehlivost regionální stavební firmy s tradicí.">
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row">
+   		<div class="large-10 columns large-offset-1 zabarveni">
+       		<h1>Naše služby</h1>
+            <p>
+              Stavitelství Šindler nabízí celou řadu služeb ve stavebnictví a souvisejících oblastech. Za téměř dvě desetiletí existence naší společnosti jsme se podíleli na velkém množství projektů nejrůznějšího rozsahu. Můžeme tak nabídnout bohaté zkušenosti a spolehlivost regionální stavební firmy s tradicí. 
+           	</p>
+       	</div>
+   	</div>
+   	<div class="row">
+	   	<div class="large-10 columns large-centered" id="nabidky_prace">
+	   		{if count($nazvy_sluzeb) == 0}
+	   			<p>
+	   				Nejsou žádné nabízené služby...
+	   			</p>
+	   		{/if}
+	   		{for $i=0;$i<count($nazvy_sluzeb);$i++}
+		   		<h2>{$nazvy_sluzeb[$i]}</h2>
+		       	<p>
+		       		{$popisy_sluzeb[$i]}
+		       	</p>
+	   		{/for}
+	   	</div>
+  	</div>
+</div>
+{/block}

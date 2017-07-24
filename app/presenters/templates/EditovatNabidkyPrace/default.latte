@@ -1,0 +1,116 @@
+{layout "../@layoutAdmin.latte"}
+{block title}
+Editovat nabídky práce | Administrace
+{/block}
+{block content}
+<div class="large-12 columns">
+	<div class="row nadpis_admin">
+		<div class="large-12 columns">
+			<h3>Seznam nabídek práce</h3>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-3 columns">
+			<strong>Název pozice</strong>
+		</div>
+		<div class="large-6 columns">
+		   	<strong>Popis pozice</strong>
+		</div>
+		<div class="large-2 columns">
+			<strong>Status</strong>
+		</div>
+		<div class="large-1 columns">
+		   	<strong>Možnosti</strong>
+		</div>
+   	</div>
+   	<hr />
+	  	{for $i=0;$i<count($nazvy_pozic);$i++}
+	   		<div class="row">
+		   		<div class="large-3 columns">
+		   			{$nazvy_pozic[$i]}
+		   		</div>
+		       	<div class="large-6 columns">
+		       		{$popisy_pozic[$i]}
+		       	</div>
+		       	<div class="large-2 columns">
+		       		{if $aktualnost_nabidek[$i] == 1}
+		       			Aktivní nabídka
+		       		{else}
+		       			Neaktivní nabídka
+		       		{/if}
+		       	</div>
+		       	<div class="large-1 columns">
+		       		<a href="#" onClick="vyplnit_formular({$id_nabidek[$i]},{$nazvy_pozic[$i]},{$popisy_pozic[$i]},{$aktualnost_nabidek[$i]})">Změnit</a>
+		       		<br />
+		       		<a href="#" onClick="smazat_nabidku({$id_nabidek[$i]})">Smazat</a>
+		       	</div>
+		   	</div>
+		   	<hr />
+	   	{/for}
+
+<div class="row nadpis_admin">
+	<div class="large-12 columns">
+		<h3>Vložte novou nebo upravte starou nabídku</h3>
+		<p>Pro úpravu staré nabídky je nutné kliknout na změnit a potom editovat údaje ve formuláři.</p>
+	</div>
+</div>   	
+{if isset($zprava)}
+<div class="row">
+	<div class="large-12 columns">
+		<p>
+			{$zprava}
+		</p>
+	</div>
+</div>
+{/if}
+  	{form selectForm}
+	  	<div class="row">
+		  	<div class="large-6 columns">
+		  		<div class="row">
+		  			<div class="large-6 columns">
+		  				Název pozice {input nazev_pozice}
+		  			</div>
+		  		</div>
+		  		<div class="row">
+		  			<div class="large-6 columns">
+		  				Aktivovat nabídku ihned
+		  				{foreach $form[aktivovat]->items as $key => $label}
+						   <label>
+						      <input type="radio" n:name="aktivovat:$key" /> {$label}
+						   </label>
+						{/foreach}
+		  			</div>
+		  		</div>
+		  	</div>
+		  	<div class="large-6 columns">
+		  		Popis pozice {input popis_pozice}
+		  	</div>
+	  	</div>
+	  	<div class=row>
+	  		<div class="large-6 columns">
+	  			{input vlozit}
+	  		</div>
+	  	</div>
+  	{/form}
+</div>
+
+<script>
+	function vyplnit_formular(id_nabidky, nazvy_pozic, popisy_pozic, aktualnost_nabidek)
+	{
+		//alert(id_nabidky);
+		document.getElementById("id_nabidky").value = id_nabidky;
+		document.getElementById("nazev_pozice").value = nazvy_pozic;
+		document.getElementById("popis_pozice").value = popisy_pozic;
+		document.getElementById("frm-selectForm-aktivovat-" + aktualnost_nabidek).checked = true;
+	}
+
+	function smazat_nabidku(id_nabidky)
+	{
+		alert("idecko je " + id_nabidky);
+		if(confirm("Opravdu chcete tuto službu nenávratně smazat?"))
+  		{
+  			window.location = {$basePath} + "/smazani-nabidky-prace?id_nabidky=" + id_nabidky;
+  		}
+	}
+</script>
+{/block}
